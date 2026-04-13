@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 背景圆形 -->
+  <circle cx="256" cy="256" r="256" fill="#5B9E8A"/>
+  <!-- 「起」字简化图形：嫩芽/生长符号 -->
+  <!-- 茎 -->
+  <rect x="244" y="200" width="24" height="140" rx="12" fill="#ffffff"/>
+  <!-- 左叶 -->
+  <ellipse cx="200" cy="230" rx="52" ry="24" fill="#ffffff" transform="rotate(-30 200 230)"/>
+  <!-- 右叶 -->
+  <ellipse cx="312" cy="230" rx="52" ry="24" fill="#ffffff" transform="rotate(30 312 230)"/>
+  <!-- 顶芽 -->
+  <ellipse cx="256" cy="188" rx="20" ry="28" fill="#ffffff"/>
+</svg>

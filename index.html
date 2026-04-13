@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#5B9E8A">
+  <title>起起成长</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon.svg">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ══ Onboarding（首次使用，全屏覆盖）══════════════════ -->
+  <div id="onboarding" class="modal" role="dialog" aria-label="建立孩子档案">
+    <div class="modal-header">
+      <span class="modal-title">欢迎使用起起成长</span>
+    </div>
+    <div class="modal-body" id="onboarding-body">
+      <!-- rendered by onboarding.js -->
+    </div>
+  </div>
+
+  <!-- ══ M_ReEntry 欢迎回来卡（底部浮层）════════════════ -->
+  <div class="overlay-backdrop" id="reentry-backdrop"></div>
+  <div class="overlay" id="reentry-overlay" role="dialog" aria-label="欢迎回来" hidden>
+    <div class="overlay-handle"></div>
+    <div id="reentry-body"><!-- rendered by reentry.js --></div>
+  </div>
+
+  <!-- ══ 活动详情 Modal ══════════════════════════════════ -->
+  <div id="activity-modal" class="modal" role="dialog" aria-label="活动详情">
+    <div class="modal-header">
+      <button class="btn btn-ghost btn-sm" id="activity-modal-close">← 返回</button>
+      <span class="modal-title" id="activity-modal-title"></span>
+    </div>
+    <div class="modal-body" id="activity-modal-body"><!-- rendered by activities.js --></div>
+  </div>
+
+  <!-- ══ 计时器 Modal ════════════════════════════════════ -->
+  <div id="timer-modal" class="modal" role="dialog" aria-label="计时观察">
+    <div id="timer-body"><!-- rendered by timer.js --></div>
+  </div>
+
+  <!-- ══ 记录表单 Overlay ════════════════════════════════ -->
+  <div class="overlay-backdrop" id="record-backdrop"></div>
+  <div class="overlay" id="record-overlay" role="dialog" aria-label="记录观察" hidden>
+    <div class="overlay-handle"></div>
+    <div id="record-body"><!-- rendered by record.js --></div>
+  </div>
+
+  <!-- ══ M4.5 会话结束卡 Overlay ════════════════════════ -->
+  <div class="overlay-backdrop" id="session-backdrop"></div>
+  <div class="overlay" id="session-overlay" role="dialog" aria-label="本次观察" hidden>
+    <div class="overlay-handle"></div>
+    <div id="session-body"><!-- rendered by record.js --></div>
+  </div>
+
+  <!-- ══ 里程碑确认 Overlay ══════════════════════════════ -->
+  <div class="overlay-backdrop" id="milestone-confirm-backdrop"></div>
+  <div class="overlay" id="milestone-confirm-overlay" role="dialog" aria-label="确认达成" hidden>
+    <div class="overlay-handle"></div>
+    <div id="milestone-confirm-body"><!-- rendered by milestones.js --></div>
+  </div>
+
+  <!-- ══ 育儿日记 Overlay ══════════════════════════════════ -->
+  <div class="overlay-backdrop" id="diary-backdrop"></div>
+  <div class="overlay" id="diary-overlay" role="dialog" aria-label="今日感想" hidden>
+    <div class="overlay-handle"></div>
+    <div id="diary-body"><!-- rendered by diary.js --></div>
+  </div>
+
+  <!-- ══ 自定义活动 Overlay ════════════════════════════════ -->
+  <div class="overlay-backdrop" id="custom-act-backdrop"></div>
+  <div class="overlay" id="custom-act-overlay" role="dialog" aria-label="自定义活动" hidden>
+    <div class="overlay-handle"></div>
+    <div id="custom-act-body"><!-- rendered by custom-activity.js --></div>
+  </div>
+
+  <!-- ══ Tab Pages ══════════════════════════════════════ -->
+
+  <!-- Today — 今日 -->
+  <div id="page-today" class="page active" role="main">
+    <div class="page-header">
+      <h1>今日</h1>
+      <span class="flex-1"></span>
+      <span id="age-display" class="text-sm text-sec"></span>
+      <button class="btn btn-ghost btn-sm" id="btn-diary-add" aria-label="记录今日感想" style="font-size:20px;line-height:1;padding:0 8px;margin-left:8px">+</button>
+    </div>
+    <div id="today-body"><!-- rendered by today.js --></div>
+  </div>
+
+  <!-- Activities — 活动库 -->
+  <div id="page-activities" class="page" role="main">
+    <div class="page-header"><h1>活动库</h1></div>
+    <div id="activities-body"><!-- rendered by activities.js --></div>
+  </div>
+
+  <!-- Growth — 成长（里程碑 + 复盘入口） -->
+  <div id="page-growth" class="page" role="main">
+    <div class="page-header"><h1>成长</h1></div>
+    <div id="growth-body"><!-- rendered by milestones.js --></div>
+    <div id="weekly-body"><!-- rendered by review.js --></div>
+    <div id="monthly-body"><!-- rendered by review.js --></div>
+  </div>
+
+  <!-- Settings — 设置 -->
+  <div id="page-settings" class="page" role="main">
+    <div class="page-header"><h1>设置</h1></div>
+    <div id="settings-body"><!-- rendered by settings.js --></div>
+  </div>
+
+  <!-- ══ Bottom Tab Bar ════════════════════════════════ -->
+  <nav id="tab-bar" role="navigation" aria-label="主导航">
+    <button class="tab-btn active" data-tab="today" aria-label="今日">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+      </svg>
+      今日
+    </button>
+    <button class="tab-btn" data-tab="activities" aria-label="活动库">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      活动库
+    </button>
+    <button class="tab-btn" data-tab="growth" aria-label="成长">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+      </svg>
+      成长
+    </button>
+    <button class="tab-btn" data-tab="settings" aria-label="设置">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      设置
+    </button>
+  </nav>
+
+</div><!-- #app -->
+
+<script type="module" src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .catch(err => console.warn('SW registration failed:', err));
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "qiqi-app",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve . --listen 3000 --no-clipboard",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.5",
+    "vitest": "^2.0.0"
+  }
+}

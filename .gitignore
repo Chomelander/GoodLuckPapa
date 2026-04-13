@@ -1,0 +1,30 @@
+node_modules/
+dist/
+.DS_Store
+
+# 个人/内部文档
+memory/
+CLAUDE.md
+.claude/
+
+# 需求/设计文档（含个人信息，不公开）
+起起成长-需求说明书-*.md
+PRD-*.md
+蒙台梭利教育活动体系-讨论稿.md
+PHASE*.md
+DATA-MAPPING*.md
+M-GUIDINTENSITY-MATRIX.md
+
+# 旧版示范数据（已合并到 js/data/）
+activity-sample-phase1.js
+activities-batch-0-6mo.js
+milestone-sample-phase1.js
+
+# 视觉参考原型（非正式代码）
+prototype.html
+
+# 教育体系文档（本地保留）
+分类方案/
+
+# 依赖锁定（不需要部署）
+package-lock.json

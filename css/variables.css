@@ -1,0 +1,48 @@
+:root {
+  /* 品牌色 */
+  --primary:       #5B9E8A;
+  --primary-light: #EBF5F2;
+  --primary-dark:  #4A8578;
+  --accent:        #E8956D;
+  --accent-light:  #FDF0E9;
+
+  /* 背景 & 表面 */
+  --bg:   #F7F5F2;
+  --card: #FFFFFF;
+
+  /* 文字 */
+  --text:      #2C3240;
+  --text-sec:  #7A8394;
+  --text-mute: #B0BAC8;
+  --border:    #EAE7E2;
+
+  /* 语义色 */
+  --success: #52B788;
+  --warning: #F4A261;
+  --danger:  #E76F51;
+  --info:    #4A9ED6;
+
+  /* 5维度色 */
+  --dim-cog:  #6B9BDF;
+  --dim-lang: #9B7FD4;
+  --dim-mot:  #5EBD8A;
+  --dim-emo:  #E8956D;
+  --dim-hab:  #C4A830;
+
+  /* 圆角 */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-xl: 24px;
+
+  /* 阴影 */
+  --sh-sm: 0 1px 4px rgba(0,0,0,.06);
+  --sh-md: 0 4px 16px rgba(0,0,0,.08);
+
+  /* 字体 */
+  --font: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+
+  /* 布局 */
+  --tab-h: 60px;
+  --header-h: 56px;
+}
