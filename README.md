@@ -2,7 +2,7 @@
 
 > 一款帮助父母学会观察孩子的育儿助手 PWA，基于蒙台梭利教育理念设计。
 
-**在线访问**：[https://goodluckpapa.github.io/GoodLuckPapa/](https://goodluckpapa.github.io/GoodLuckPapa/)
+**在线访问**：[https://chomelander.github.io/GoodLuckPapa/](https://chomelander.github.io/GoodLuckPapa/)
 
 ---
 
