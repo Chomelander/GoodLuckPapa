@@ -54,20 +54,51 @@ export function buildSettingsHTML({ profile, settings }) {
     { value: 'heavy',  label: '重', desc: '详细步骤说明' },
   ];
 
+  const genderLabel = g => g === 'male' ? '男孩' : g === 'female' ? '女孩' : '未填写';
+
   const profileSection = profile
-    ? `<div class="card" style="margin-bottom:12px">
-         <div class="card-title" style="margin-bottom:8px">孩子档案</div>
-         <div class="flex-center gap-8" style="margin-bottom:4px">
-           <span class="text-sm text-sec" style="width:60px">姓名</span>
-           <span>${profile.name}</span>
+    ? `<div class="card" style="margin-bottom:12px" id="profile-card">
+         <div style="display:flex;align-items:center;margin-bottom:8px">
+           <span class="card-title" style="flex:1">孩子档案</span>
+           <button class="btn btn-ghost btn-sm" id="btn-edit-profile">编辑</button>
          </div>
-         <div class="flex-center gap-8" style="margin-bottom:4px">
-           <span class="text-sm text-sec" style="width:60px">出生日期</span>
-           <span>${profile.birthDate}</span>
+         <div id="profile-display">
+           <div class="flex-center gap-8" style="margin-bottom:4px">
+             <span class="text-sm text-sec" style="width:60px">姓名</span>
+             <span>${profile.name}</span>
+           </div>
+           <div class="flex-center gap-8" style="margin-bottom:4px">
+             <span class="text-sm text-sec" style="width:60px">出生日期</span>
+             <span>${profile.birthDate}</span>
+           </div>
+           <div class="flex-center gap-8">
+             <span class="text-sm text-sec" style="width:60px">性别</span>
+             <span>${genderLabel(profile.gender)}</span>
+           </div>
          </div>
-         <div class="flex-center gap-8">
-           <span class="text-sm text-sec" style="width:60px">性别</span>
-           <span>${profile.gender === 'male' ? '男孩' : profile.gender === 'female' ? '女孩' : '未填写'}</span>
+         <div id="profile-form" style="display:none">
+           <div style="margin-bottom:12px">
+             <label style="font-size:13px;color:var(--text-sec);display:block;margin-bottom:4px">姓名</label>
+             <input id="edit-name" type="text" value="${profile.name}"
+               style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:14px;box-sizing:border-box">
+           </div>
+           <div style="margin-bottom:12px">
+             <label style="font-size:13px;color:var(--text-sec);display:block;margin-bottom:4px">出生日期</label>
+             <input id="edit-birth" type="date" value="${profile.birthDate}"
+               style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:14px;box-sizing:border-box">
+           </div>
+           <div style="margin-bottom:16px">
+             <label style="font-size:13px;color:var(--text-sec);display:block;margin-bottom:8px">性别</label>
+             <div class="seg-control" id="edit-gender-control">
+               <button type="button" class="seg-btn${profile.gender === 'male' ? ' active' : ''}" data-gender="male">男孩</button>
+               <button type="button" class="seg-btn${profile.gender === 'female' ? ' active' : ''}" data-gender="female">女孩</button>
+               <button type="button" class="seg-btn${!profile.gender || profile.gender === 'other' ? ' active' : ''}" data-gender="other">暂不填</button>
+             </div>
+           </div>
+           <div style="display:flex;gap:8px">
+             <button class="btn btn-primary btn-sm" id="btn-save-profile" style="flex:1">保存</button>
+             <button class="btn btn-ghost btn-sm" id="btn-cancel-profile" style="flex:1">取消</button>
+           </div>
          </div>
        </div>`
     : `<div class="card" style="margin-bottom:12px">
@@ -171,15 +202,16 @@ export async function renderSettings() {
 
   // M9 导出
   body.querySelector('#btn-export')?.addEventListener('click', async () => {
-    const [profile, records, milestones, monthlyReviews] = await Promise.all([
+    // 先拿到 records，再用它查 monthlyReviews（避免 Promise.all 内部前向引用）
+    const records = await state.db.getRecords();
+    const months = [...new Set(records.map(r => r.date?.slice(0, 7)).filter(Boolean))];
+
+    const [profile, milestones, monthlyReviews] = await Promise.all([
       state.db.getProfile(),
-      state.db.getRecords(),
       Promise.all(state.milestones.map(m => state.db.getMilestoneState(m.id)
         .then(s => s ? { id: m.id, ...s } : null))).then(arr => arr.filter(Boolean)),
       Promise.all(
-        [...new Set(records?.map(r => r.date.slice(0, 7)) ?? [])].map(
-          mo => state.db.getMonthlyReview(mo).then(r => r ? { month: mo, ...r } : null)
-        )
+        months.map(mo => state.db.getMonthlyReview(mo).then(r => r ? { month: mo, ...r } : null))
       ).then(arr => arr.filter(Boolean)),
     ]);
 
@@ -192,6 +224,68 @@ export async function renderSettings() {
     a.click();
     URL.revokeObjectURL(url);
   });
+
+  // 孩子档案编辑
+  if (state.profile) {
+    let editGender = state.profile.gender ?? 'other';
+
+    body.querySelector('#btn-edit-profile')?.addEventListener('click', () => {
+      body.querySelector('#profile-display').style.display = 'none';
+      body.querySelector('#profile-form').style.display = 'block';
+      body.querySelector('#btn-edit-profile').style.display = 'none';
+    });
+
+    body.querySelector('#edit-gender-control')?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-gender]');
+      if (!btn) return;
+      editGender = btn.dataset.gender;
+      body.querySelectorAll('#edit-gender-control .seg-btn')
+        .forEach(b => b.classList.toggle('active', b === btn));
+    });
+
+    body.querySelector('#btn-cancel-profile')?.addEventListener('click', () => {
+      body.querySelector('#profile-display').style.display = '';
+      body.querySelector('#profile-form').style.display = 'none';
+      body.querySelector('#btn-edit-profile').style.display = '';
+    });
+
+    body.querySelector('#btn-save-profile')?.addEventListener('click', async () => {
+      const name = body.querySelector('#edit-name').value.trim();
+      const birthDate = body.querySelector('#edit-birth').value;
+      if (!name || !birthDate) return;
+
+      const updated = { ...state.profile, name, birthDate, gender: editGender };
+      await state.db.saveProfile(updated);
+      state.profile = updated;
+
+      // 更新月龄显示
+      const { calcAgeMonths } = await import('../rules.js');
+      state.ageMonths = calcAgeMonths(birthDate, state.today);
+      const { fmtAge } = await import('../app.js');
+      const ageEl = document.getElementById('age-display');
+      if (ageEl) ageEl.textContent = fmtAge(state.ageMonths);
+
+      // 刷新档案展示区
+      const genderLabel = g => g === 'male' ? '男孩' : g === 'female' ? '女孩' : '未填写';
+      body.querySelector('#profile-display').innerHTML = `
+        <div class="flex-center gap-8" style="margin-bottom:4px">
+          <span class="text-sm text-sec" style="width:60px">姓名</span>
+          <span>${name}</span>
+        </div>
+        <div class="flex-center gap-8" style="margin-bottom:4px">
+          <span class="text-sm text-sec" style="width:60px">出生日期</span>
+          <span>${birthDate}</span>
+        </div>
+        <div class="flex-center gap-8">
+          <span class="text-sm text-sec" style="width:60px">性别</span>
+          <span>${genderLabel(editGender)}</span>
+        </div>`;
+
+      body.querySelector('#profile-display').style.display = '';
+      body.querySelector('#profile-form').style.display = 'none';
+      body.querySelector('#btn-edit-profile').style.display = '';
+    });
+  }
 
   // M9 导入
   body.querySelector('#import-file')?.addEventListener('change', async e => {
