@@ -159,7 +159,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   transition: border-color .15s;
 }
 .form-input:focus { border-color: var(--primary); }
-.form-textarea { resize: none; height: 80px; }
+.form-textarea { resize: vertical; min-height: 80px; max-height: 240px; overflow-y: auto; }
 
 /* Segmented control */
 .seg-control {

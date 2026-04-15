@@ -67,6 +67,7 @@ export function buildTodayHTML({ main, backups, daysSince }) {
             ${matHTML}
             <div class="flex gap-8" style="margin-top:8px">
               <button class="btn btn-secondary btn-sm" style="flex:1" data-action="start-timer" data-id="${act.id}">开始计时</button>
+              <button class="btn btn-ghost btn-sm" data-action="fill-record" data-id="${act.id}">补填</button>
               <button class="btn btn-ghost btn-sm" data-action="view-detail" data-id="${act.id}">详情</button>
             </div>
           </div>`;
@@ -101,6 +102,7 @@ export function buildTodayHTML({ main, backups, daysSince }) {
           <button class="btn btn-primary" style="flex:1" data-action="start-timer" data-id="${main.id}">
             开始计时
           </button>
+          <button class="btn btn-ghost btn-sm" data-action="fill-record" data-id="${main.id}">补填</button>
           <button class="btn btn-ghost btn-sm" data-action="view-detail" data-id="${main.id}">
             详情
           </button>
@@ -187,6 +189,8 @@ export async function renderToday() {
 
     if (action === 'start-timer') {
       document.dispatchEvent(new CustomEvent('today:startTimer', { detail: { actId: id } }));
+    } else if (action === 'fill-record') {
+      document.dispatchEvent(new CustomEvent('today:fillRecord', { detail: { actId: id } }));
     } else if (action === 'view-detail') {
       document.dispatchEvent(new CustomEvent('today:viewDetail', { detail: { actId: id } }));
     } else if (action === 'edit-record') {

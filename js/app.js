@@ -98,8 +98,11 @@ async function startApp() {
   document.addEventListener('today:startTimer', e => {
     showTimer(e.detail.actId, state.activities);
   });
+  document.addEventListener('today:fillRecord', e => {
+    showRecord({ actId: e.detail.actId, focusSec: 0, manualEntry: true });
+  });
   document.addEventListener('timer:finish', e => {
-    showRecord({ actId: e.detail.actId, focusSec: e.detail.focusSec });
+    showRecord({ actId: e.detail.actId, focusSec: e.detail.focusSec, manualEntry: e.detail.manualEntry ?? false });
   });
   document.addEventListener('today:viewDetail', e => {
     showActivityDetail(e.detail.actId);

@@ -98,6 +98,28 @@ describe('buildTodayHTML', () => {
   });
 });
 
+describe('buildTodayHTML — 补填记录按钮', () => {
+  it('main card has fill-record button with correct data-id', () => {
+    const html = buildTodayHTML({ main: sampleMain, backups: [], daysSince: null });
+    expect(html).toContain('data-action="fill-record"');
+    expect(html).toContain('data-id="S-0-01"');
+  });
+
+  it('main card fill-record button shows 补填 label', () => {
+    const html = buildTodayHTML({ main: sampleMain, backups: [], daysSince: null });
+    expect(html).toContain('补填');
+  });
+
+  it('backup card also has fill-record button', () => {
+    const html = buildTodayHTML({ main: sampleMain, backups: [sampleBackup], daysSince: null });
+    // 备选卡也有补填入口，data-id 指向备选活动
+    expect(html).toContain('data-id="S-0-02"');
+    // 至少有一个 fill-record
+    const fillCount = (html.match(/data-action="fill-record"/g) ?? []).length;
+    expect(fillCount).toBeGreaterThanOrEqual(2);
+  });
+});
+
 const completedActivities = [
   { id: 'S-0-01', title: '触觉感官板', domain: 'sensorial', ageRange: [0, 6] },
 ];

@@ -143,10 +143,11 @@ export function buildActivityDetailHTML({ activity, milestones, guideIntensity =
     ${milestonesHTML}
     ${theoryHTML}
 
-    <div style="padding:0 16px 16px">
-      <button class="btn btn-primary btn-full" data-action="start-timer" data-id="${activity.id}">
+    <div style="padding:0 16px 16px;display:flex;gap:8px">
+      <button class="btn btn-primary btn-full" style="flex:1" data-action="start-timer" data-id="${activity.id}">
         开始计时观察
       </button>
+      <button class="btn btn-ghost btn-sm" data-action="fill-record" data-id="${activity.id}">补填记录</button>
     </div>`;
 }
 
@@ -192,14 +193,18 @@ export async function showActivityDetail(actId) {
   });
   modal?.classList.add('open');
 
-  // start timer from detail
+  // 活动详情页：开始计时 / 补填记录
   bodyEl?.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action="start-timer"]');
+    const btn = e.target.closest('[data-action]');
     if (!btn) return;
-    modal.classList.remove('open');
-    document.dispatchEvent(new CustomEvent('today:startTimer', {
-      detail: { actId: btn.dataset.id },
-    }));
+    const { action, id } = btn.dataset;
+    if (action === 'start-timer') {
+      modal.classList.remove('open');
+      document.dispatchEvent(new CustomEvent('today:startTimer', { detail: { actId: id } }));
+    } else if (action === 'fill-record') {
+      modal.classList.remove('open');
+      document.dispatchEvent(new CustomEvent('today:fillRecord', { detail: { actId: id } }));
+    }
   }, { once: true });
 }
 

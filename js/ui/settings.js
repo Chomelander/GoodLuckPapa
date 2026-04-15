@@ -206,8 +206,9 @@ export async function renderSettings() {
     const records = await state.db.getRecords();
     const months = [...new Set(records.map(r => r.date?.slice(0, 7)).filter(Boolean))];
 
-    const [profile, milestones, monthlyReviews] = await Promise.all([
+    const [profile, diaries, milestones, monthlyReviews] = await Promise.all([
       state.db.getProfile(),
+      state.db.getDiaries(),
       Promise.all(state.milestones.map(m => state.db.getMilestoneState(m.id)
         .then(s => s ? { id: m.id, ...s } : null))).then(arr => arr.filter(Boolean)),
       Promise.all(
@@ -215,7 +216,7 @@ export async function renderSettings() {
       ).then(arr => arr.filter(Boolean)),
     ]);
 
-    const data = { exportedAt: new Date().toISOString(), profile, records, milestones, monthlyReviews };
+    const data = { exportedAt: new Date().toISOString(), profile, records, diaries, milestones, monthlyReviews };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -302,6 +303,12 @@ export async function renderSettings() {
         for (const m of data.milestones) {
           const { id, ...mstate } = m;
           await state.db.saveMilestoneState(id, mstate);
+        }
+      }
+      if (data.diaries) {
+        for (const d of data.diaries) {
+          const { id, ...rest } = d;
+          await state.db.addDiary(rest);
         }
       }
       alert('数据导入成功，请刷新页面');

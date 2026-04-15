@@ -57,6 +57,11 @@ export function buildTimerHTML({ activity, elapsed, running, guideIntensity = 'n
 
       ${primaryBtn}
       ${finishBtn}
+
+      <div style="text-align:center;margin-top:12px">
+        <button type="button" class="btn btn-ghost btn-sm" data-action="skip-timer"
+          style="font-size:12px;color:var(--text-mute)">直接填写（跳过计时）</button>
+      </div>
     </div>`;
 }
 
@@ -115,6 +120,17 @@ export function hideTimer() {
 }
 
 function _handleClick(e) {
+  // 跳过计时按钮（data-action 而非 data-timer-action）
+  if (e.target.closest('[data-action="skip-timer"]')) {
+    clearInterval(_intervalId);
+    _running = false;
+    hideTimer();
+    document.dispatchEvent(new CustomEvent('timer:finish', {
+      detail: { actId: _actId, focusSec: _elapsed, manualEntry: true },
+    }));
+    return;
+  }
+
   const btn = e.target.closest('[data-timer-action]');
   if (!btn) return;
   const action = btn.dataset.timerAction;

@@ -60,6 +60,23 @@ describe('buildTimerHTML', () => {
   });
 });
 
+describe('buildTimerHTML — 跳过计时按钮', () => {
+  it('renders skip-timer button when elapsed is 0', () => {
+    const html = buildTimerHTML({ activity: sampleActivity, elapsed: 0, running: false });
+    expect(html).toContain('data-action="skip-timer"');
+  });
+
+  it('renders skip-timer button when timer is running', () => {
+    const html = buildTimerHTML({ activity: sampleActivity, elapsed: 15, running: true });
+    expect(html).toContain('data-action="skip-timer"');
+  });
+
+  it('skip-timer button contains 直接填写 text', () => {
+    const html = buildTimerHTML({ activity: sampleActivity, elapsed: 0, running: false });
+    expect(html).toContain('直接填写');
+  });
+});
+
 describe('buildTimerHTML — guideIntensity 条件渲染', () => {
   it('light 模式下不显示 observeAnchor', () => {
     const html = buildTimerHTML({ activity: sampleActivity, elapsed: 0, running: false, guideIntensity: 'light' });

@@ -154,7 +154,10 @@ export function buildDiaryTimelineHTML({ entries }) {
             return `
               <div class="card diary-entry-card" style="margin-bottom:8px;cursor:pointer"
                 data-diary-id="${e.id}">
-                <div style="font-size:12px;color:var(--text-mute);margin-bottom:4px">${e.date}</div>
+                <div style="display:flex;align-items:center;margin-bottom:4px">
+                  <span style="font-size:12px;color:var(--text-mute);flex:1">${e.date}</span>
+                  <span style="font-size:12px;color:var(--primary)">编辑</span>
+                </div>
                 ${summary ? `<p style="font-size:14px;color:var(--text-sec);line-height:1.5">${summary}</p>` : ''}
                 ${thumbRow}
               </div>`;
@@ -198,6 +201,16 @@ export function showDiaryOverlay({ entry } = {}) {
   body.innerHTML = buildDiaryFormHTML({ entry });
   backdrop.classList.add('open');
   overlay.removeAttribute('hidden');
+
+  // textarea 自动撑开已有内容高度
+  overlay.querySelectorAll('textarea').forEach(ta => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 240) + 'px';
+    ta.addEventListener('input', () => {
+      ta.style.height = 'auto';
+      ta.style.height = Math.min(ta.scrollHeight, 240) + 'px';
+    });
+  });
 
   // 图片选择
   const imgInput = overlay.querySelector('#diary-img-input');
@@ -301,5 +314,16 @@ if (typeof document !== 'undefined') {
     tmp.innerHTML = buildDiaryTimelineHTML({ entries });
     const newSection = tmp.firstElementChild;
     diarySection.closest('.section')?.replaceWith(newSection);
+  });
+
+  // 日记时间线卡片点击 → 编辑
+  document.addEventListener('click', async e => {
+    const card = e.target.closest('.diary-entry-card');
+    if (!card) return;
+    const diaryId = parseInt(card.dataset.diaryId, 10);
+    if (!diaryId) return;
+    const entries = await state.db.getDiaries();
+    const entry = entries.find(en => en.id === diaryId);
+    if (entry) showDiaryOverlay({ entry });
   });
 }

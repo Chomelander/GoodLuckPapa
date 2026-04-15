@@ -45,6 +45,49 @@ describe('buildRecordHTML', () => {
   });
 });
 
+describe('buildRecordHTML — observeAnchor 引导', () => {
+  it('renders observeAnchor text in record form', () => {
+    const html = buildRecordHTML({ activity: sampleActivity, focusSec: 90 });
+    expect(html).toContain('孩子手部接触板面时的专注程度');
+  });
+
+  it('renders obs-guide-card wrapper when observeAnchor present', () => {
+    const html = buildRecordHTML({ activity: sampleActivity, focusSec: 0 });
+    expect(html).toContain('obs-guide-card');
+  });
+
+  it('does not render obs-guide-card when activity has no observeAnchor', () => {
+    const actNoAnchor = { ...sampleActivity, observeAnchor: undefined };
+    const html = buildRecordHTML({ activity: actNoAnchor, focusSec: 0 });
+    expect(html).not.toContain('obs-guide-card');
+  });
+
+  it('note textarea placeholder references observeAnchor guidance', () => {
+    const html = buildRecordHTML({ activity: sampleActivity, focusSec: 0 });
+    expect(html).toContain('结合以上锚点');
+  });
+});
+
+describe('buildRecordHTML — manualEntry 时长编辑', () => {
+  it('manualEntry=true renders time input fields instead of static display', () => {
+    const html = buildRecordHTML({ activity: sampleActivity, focusSec: 0, manualEntry: true });
+    expect(html).toContain('id="focus-min"');
+    expect(html).toContain('id="focus-sec"');
+  });
+
+  it('manualEntry=false renders time as static display with edit hint', () => {
+    const html = buildRecordHTML({ activity: sampleActivity, focusSec: 90, manualEntry: false });
+    expect(html).toContain('01:30');
+    expect(html).toContain('data-action="edit-focussec"');
+  });
+
+  it('manualEntry=true stores time in hidden field after input', () => {
+    const html = buildRecordHTML({ activity: sampleActivity, focusSec: 0, manualEntry: true });
+    // 隐藏字段 data-focussec 用于 submit 时读取
+    expect(html).toContain('id="focussec-hidden"');
+  });
+});
+
 describe('buildSessionHTML', () => {
   it('renders positive feedback', () => {
     const html = buildSessionHTML({

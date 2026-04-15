@@ -25,7 +25,7 @@ function fmtSec(sec) {
   return `${m}:${s}`;
 }
 
-export function buildRecordHTML({ activity, focusSec }) {
+export function buildRecordHTML({ activity, focusSec, manualEntry = false }) {
   const emotionBtns = EMOTIONS.map((e, i) => `
     <button type="button" class="seg-btn${i === 0 ? ' active' : ''}" data-emotion="${e.value}">
       ${e.label}
@@ -36,17 +36,57 @@ export function buildRecordHTML({ activity, focusSec }) {
       ${t.label}
     </button>`).join('');
 
+  const anchorHTML = activity.observeAnchor
+    ? `<div class="obs-guide-card" style="background:color-mix(in srgb,var(--primary) 8%,white);border-radius:var(--r-md);padding:12px;margin-bottom:16px">
+         <div style="font-size:11px;font-weight:600;color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">观察引导</div>
+         <p style="font-size:13px;color:var(--text-sec);line-height:1.6;margin:0">${activity.observeAnchor}</p>
+       </div>`
+    : '';
+
+  const timeSectionHTML = manualEntry
+    ? `<div class="form-group">
+         <label class="form-label">本次专注时长（分 : 秒）</label>
+         <div style="display:flex;align-items:center;gap:8px">
+           <input type="number" id="focus-min" min="0" max="999" value="0"
+             style="width:70px;padding:8px;text-align:center;border:1px solid var(--border);border-radius:var(--r-sm);font-size:16px">
+           <span style="font-size:18px;color:var(--text-sec)">:</span>
+           <input type="number" id="focus-sec" min="0" max="59" value="0"
+             style="width:70px;padding:8px;text-align:center;border:1px solid var(--border);border-radius:var(--r-sm);font-size:16px">
+         </div>
+         <input type="hidden" id="focussec-hidden" value="0">
+         <p style="font-size:12px;color:var(--text-mute);margin-top:4px">补填记录时请估算大致时长</p>
+       </div>`
+    : `<div class="form-group">
+         <label class="form-label">本次专注时长</label>
+         <div style="display:flex;align-items:center;gap:12px">
+           <div id="focussec-display" style="font-size:20px;font-weight:600;color:var(--primary)">${fmtSec(focusSec)}</div>
+           <button type="button" class="btn btn-ghost btn-sm" data-action="edit-focussec"
+             style="font-size:12px;color:var(--text-mute)">修改</button>
+         </div>
+         <div id="focussec-edit" style="display:none;margin-top:8px">
+           <div style="display:flex;align-items:center;gap:8px">
+             <input type="number" id="focus-min" min="0" max="999" value="${Math.floor(focusSec / 60)}"
+               style="width:70px;padding:8px;text-align:center;border:1px solid var(--border);border-radius:var(--r-sm);font-size:16px">
+             <span style="font-size:18px;color:var(--text-sec)">:</span>
+             <input type="number" id="focus-sec" min="0" max="59" value="${focusSec % 60}"
+               style="width:70px;padding:8px;text-align:center;border:1px solid var(--border);border-radius:var(--r-sm);font-size:16px">
+             <button type="button" class="btn btn-ghost btn-sm" data-action="confirm-focussec">确认</button>
+           </div>
+         </div>
+       </div>`;
+
+  const notePlaceholder = activity.observeAnchor ? '结合以上锚点，记录你的观察…' : '记录你观察到的细节…';
+
   return `
     <div class="overlay-handle"></div>
     <div style="font-size:17px;font-weight:600;margin-bottom:16px">记录观察</div>
     <div style="font-size:14px;color:var(--text-sec);margin-bottom:16px">${activity.title}</div>
 
-    <form id="record-form" data-actid="${activity.id}" data-focussec="${focusSec}">
+    ${anchorHTML}
 
-      <div class="form-group">
-        <label class="form-label">本次专注时长</label>
-        <div style="font-size:20px;font-weight:600;color:var(--primary)">${fmtSec(focusSec)}</div>
-      </div>
+    <form id="record-form" data-actid="${activity.id}" data-focussec="${focusSec}" data-manual="${manualEntry ? '1' : ''}">
+
+      ${timeSectionHTML}
 
       <div class="form-group">
         <label class="form-label">孩子的状态</label>
@@ -65,7 +105,7 @@ export function buildRecordHTML({ activity, focusSec }) {
       <div class="form-group">
         <label class="form-label">观察备注（选填）</label>
         <textarea class="form-input form-textarea" id="record-note"
-          placeholder="记录你观察到的细节…"></textarea>
+          placeholder="${notePlaceholder}"></textarea>
       </div>
 
       <button type="submit" class="btn btn-primary btn-full">保存记录</button>
@@ -96,7 +136,7 @@ export function buildSessionHTML({ activity, focusSec, anchorMet }) {
 
 // ── 浏览器端记录 overlay 逻辑 ──────────────────────────────
 
-export function showRecord({ actId, focusSec, existingRecord } = {}) {
+export function showRecord({ actId, focusSec, existingRecord, manualEntry = false } = {}) {
   const activity = state.activities.find(a => a.id === actId);
   if (!activity) return;
 
@@ -104,7 +144,7 @@ export function showRecord({ actId, focusSec, existingRecord } = {}) {
   const backdrop = document.getElementById('record-backdrop');
   const overlay = document.getElementById('record-overlay');
 
-  body.innerHTML = buildRecordHTML({ activity, focusSec });
+  body.innerHTML = buildRecordHTML({ activity, focusSec, manualEntry });
 
   // 编辑模式：预填已有值
   if (existingRecord) {
@@ -158,6 +198,24 @@ function _handleOverlayClick(e) {
     initBtn.classList.add('active');
     return;
   }
+  // 时长编辑
+  const actionBtn = e.target.closest('[data-action]');
+  if (!actionBtn) return;
+  const action = actionBtn.dataset.action;
+  if (action === 'edit-focussec') {
+    const editDiv = document.getElementById('focussec-edit');
+    if (editDiv) editDiv.style.display = 'block';
+  } else if (action === 'confirm-focussec') {
+    const mins = parseInt(document.getElementById('focus-min')?.value ?? '0', 10) || 0;
+    const secs = Math.min(parseInt(document.getElementById('focus-sec')?.value ?? '0', 10) || 0, 59);
+    const newSec = mins * 60 + secs;
+    const form = document.getElementById('record-form');
+    if (form) form.dataset.focussec = String(newSec);
+    const display = document.getElementById('focussec-display');
+    if (display) display.textContent = fmtSec(newSec);
+    const editDiv = document.getElementById('focussec-edit');
+    if (editDiv) editDiv.style.display = 'none';
+  }
 }
 
 if (typeof document !== 'undefined') {
@@ -167,7 +225,12 @@ if (typeof document !== 'undefined') {
 
     const form = e.target;
     const actId = form.dataset.actid;
-    const focusSec = parseInt(form.dataset.focussec, 10);
+    // manualEntry 模式：从输入框读取时长
+    const isManual = form.dataset.manual === '1';
+    const focusSec = isManual
+      ? (parseInt(document.getElementById('focus-min')?.value ?? '0', 10) || 0) * 60
+        + Math.min(parseInt(document.getElementById('focus-sec')?.value ?? '0', 10) || 0, 59)
+      : parseInt(form.dataset.focussec, 10);
     const emotion = document.querySelector('#emotion-control .seg-btn.active')?.dataset.emotion ?? 'calm';
     const initType = document.querySelector('#inittype-control .seg-btn.active')?.dataset.inittype ?? 'adult_led';
     const note = document.getElementById('record-note')?.value.trim() ?? '';
