@@ -4,6 +4,7 @@
 import { state } from '../app.js';
 import { getMilestoneStatus } from '../rules.js';
 import { buildDiaryTimelineHTML } from './diary.js';
+import { buildActivityRecordsHTML } from './growth-records.js';
 
 const STATUS_LABEL = {
   pending:  '待观察',
@@ -104,9 +105,13 @@ export async function renderGrowth() {
     if (saved) milestoneStates[m.id] = saved;
   }
 
-  // 日记时间线插在里程碑前面
-  const diaries = await state.db.getDiaries();
+  // 日记时间线 + 活动记录时间线插在里程碑前面
+  const [diaries, records] = await Promise.all([
+    state.db.getDiaries(),
+    state.db.getRecords(),
+  ]);
   body.innerHTML = buildDiaryTimelineHTML({ entries: diaries })
+    + `<div id="activity-records-section">${buildActivityRecordsHTML({ records, activities: state.activities })}</div>`
     + buildGrowthHTML({
         milestones: state.milestones,
         ageMonths: state.ageMonths,
