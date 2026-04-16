@@ -119,7 +119,38 @@ async function startApp() {
   renderToday();
 }
 
+// ── PWA 更新检测（Service Worker controllerchange）──────────
+// 完全离线安全：浏览器负责 SW 文件检查，网络不通时不触发此事件
+function _showUpdateBanner() {
+  const banner = document.createElement('div');
+  banner.id = 'update-banner';
+  banner.style.cssText = [
+    'position:fixed;top:0;left:50%;transform:translateX(-50%)',
+    'width:100%;max-width:430px',
+    'background:var(--primary);color:#fff',
+    'padding:10px 16px',
+    'display:flex;align-items:center;justify-content:space-between;gap:8px',
+    'z-index:9999;font-size:13px',
+  ].join(';');
+  banner.innerHTML = `
+    <span>新版本已就绪</span>
+    <button id="update-reload-btn"
+      style="background:#fff;color:var(--primary);border:none;padding:4px 14px;
+             border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0">
+      刷新
+    </button>`;
+  document.body.insertBefore(banner, document.body.firstChild);
+  document.getElementById('update-reload-btn')?.addEventListener('click', () => location.reload());
+}
+
 if (typeof document !== 'undefined') {
+  // SW 注册
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+    // 新 SW 激活后（CACHE_NAME 变更时）触发，显示非强制刷新提示
+    navigator.serviceWorker.addEventListener('controllerchange', _showUpdateBanner);
+  }
+
   init().catch(err => {
     console.error('初始化失败:', err);
     document.getElementById('app').innerHTML =
