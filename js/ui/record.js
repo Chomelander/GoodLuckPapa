@@ -5,6 +5,24 @@
 import { state } from '../app.js';
 import { evaluateInterest, calcTypicalSec } from '../rules.js';
 
+export function parseAnchorQuestions(str) {
+  if (!str) return [];
+  return str.split('？')
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+    .map(s => s + '？');
+}
+
+export function mergeAnchorAnswers({ questions, answers, note }) {
+  const pairs = questions
+    .map((q, i) => (answers[i]?.trim() ? `${q} → ${answers[i].trim()}` : null))
+    .filter(Boolean);
+  if (pairs.length === 0) return note;
+  const qaBlock = pairs.join('\n');
+  if (!note.trim()) return qaBlock;
+  return `${qaBlock}\n---\n${note}`;
+}
+
 const EMOTIONS = [
   { value: 'engaged',    label: '专注' },
   { value: 'happy',      label: '愉悦' },

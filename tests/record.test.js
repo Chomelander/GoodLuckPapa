@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildRecordHTML, buildSessionHTML } from '../js/ui/record.js';
+import { buildRecordHTML, buildSessionHTML, parseAnchorQuestions, mergeAnchorAnswers } from '../js/ui/record.js';
 
 const sampleActivity = {
   id: 'S-0-01',
@@ -85,6 +85,75 @@ describe('buildRecordHTML — manualEntry 时长编辑', () => {
     const html = buildRecordHTML({ activity: sampleActivity, focusSec: 0, manualEntry: true });
     // 隐藏字段 data-focussec 用于 submit 时读取
     expect(html).toContain('id="focussec-hidden"');
+  });
+});
+
+describe('parseAnchorQuestions', () => {
+  it('splits multi-question anchor into array', () => {
+    const qs = parseAnchorQuestions('他听到你的声音有什么反应？转头？安静下来？');
+    expect(qs).toEqual(['他听到你的声音有什么反应？', '转头？', '安静下来？']);
+  });
+
+  it('handles single question anchor', () => {
+    const qs = parseAnchorQuestions('他在你怀里是放松还是紧绷？');
+    expect(qs).toEqual(['他在你怀里是放松还是紧绷？']);
+  });
+
+  it('returns empty array for empty string', () => {
+    expect(parseAnchorQuestions('')).toEqual([]);
+  });
+
+  it('returns empty array for null/undefined', () => {
+    expect(parseAnchorQuestions(null)).toEqual([]);
+    expect(parseAnchorQuestions(undefined)).toEqual([]);
+  });
+
+  it('appends ？ to fragment that did not originally end with one', () => {
+    const qs = parseAnchorQuestions('孩子手部接触板面时的专注程度');
+    expect(qs).toEqual(['孩子手部接触板面时的专注程度？']);
+  });
+});
+
+describe('mergeAnchorAnswers', () => {
+  it('formats q→a pairs and appends note', () => {
+    const result = mergeAnchorAnswers({
+      questions: ['转头？', '安静吗？'],
+      answers: ['转头了', '不安静'],
+      note: '补充观察',
+    });
+    expect(result).toBe('转头？ → 转头了\n安静吗？ → 不安静\n---\n补充观察');
+  });
+
+  it('omits separator when note is empty', () => {
+    const result = mergeAnchorAnswers({
+      questions: ['转头？'],
+      answers: ['转头了'],
+      note: '',
+    });
+    expect(result).toBe('转头？ → 转头了');
+  });
+
+  it('omits empty answers from output', () => {
+    const result = mergeAnchorAnswers({
+      questions: ['转头？', '安静吗？'],
+      answers: ['转头了', ''],
+      note: '',
+    });
+    expect(result).toBe('转头？ → 转头了');
+  });
+
+  it('returns note unchanged when no questions answered', () => {
+    const result = mergeAnchorAnswers({
+      questions: ['转头？'],
+      answers: [''],
+      note: '只有备注',
+    });
+    expect(result).toBe('只有备注');
+  });
+
+  it('returns empty string when both empty', () => {
+    const result = mergeAnchorAnswers({ questions: [], answers: [], note: '' });
+    expect(result).toBe('');
   });
 });
 
