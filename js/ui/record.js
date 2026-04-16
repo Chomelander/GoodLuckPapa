@@ -43,7 +43,7 @@ function fmtSec(sec) {
   return `${m}:${s}`;
 }
 
-export function buildRecordHTML({ activity, focusSec, manualEntry = false }) {
+export function buildRecordHTML({ activity, focusSec, manualEntry = false, isEdit = false }) {
   const emotionBtns = EMOTIONS.map((e, i) => `
     <button type="button" class="seg-btn${i === 0 ? ' active' : ''}" data-emotion="${e.value}">
       ${e.label}
@@ -54,10 +54,16 @@ export function buildRecordHTML({ activity, focusSec, manualEntry = false }) {
       ${t.label}
     </button>`).join('');
 
-  const anchorHTML = activity.observeAnchor
-    ? `<div class="obs-guide-card" style="background:color-mix(in srgb,var(--primary) 8%,white);border-radius:var(--r-md);padding:12px;margin-bottom:16px">
-         <div style="font-size:11px;font-weight:600;color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">观察引导</div>
-         <p style="font-size:13px;color:var(--text-sec);line-height:1.6;margin:0">${activity.observeAnchor}</p>
+  const anchorQuestionsHTML = (activity.observeAnchor && !isEdit)
+    ? `<div class="form-group">
+         <label class="form-label">观察锚点</label>
+         ${parseAnchorQuestions(activity.observeAnchor).map((q, i) => `
+           <div style="margin-bottom:10px">
+             <div style="font-size:13px;color:var(--text-sec);margin-bottom:6px">${q}</div>
+             <input type="text" class="form-input" data-anchor-index="${i}"
+               placeholder="记录你的观察…"
+               style="font-size:14px">
+           </div>`).join('')}
        </div>`
     : '';
 
@@ -93,14 +99,12 @@ export function buildRecordHTML({ activity, focusSec, manualEntry = false }) {
          </div>
        </div>`;
 
-  const notePlaceholder = activity.observeAnchor ? '结合以上锚点，记录你的观察…' : '记录你观察到的细节…';
+  const notePlaceholder = activity.observeAnchor ? '可在此补充其他观察…' : '记录你观察到的细节…';
 
   return `
     <div class="overlay-handle"></div>
     <div style="font-size:17px;font-weight:600;margin-bottom:16px">记录观察</div>
     <div style="font-size:14px;color:var(--text-sec);margin-bottom:16px">${activity.title}</div>
-
-    ${anchorHTML}
 
     <form id="record-form" data-actid="${activity.id}" data-focussec="${focusSec}" data-manual="${manualEntry ? '1' : ''}">
 
@@ -119,6 +123,8 @@ export function buildRecordHTML({ activity, focusSec, manualEntry = false }) {
           ${initBtns}
         </div>
       </div>
+
+      ${anchorQuestionsHTML}
 
       <div class="form-group">
         <label class="form-label">观察备注（选填）</label>

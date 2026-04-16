@@ -45,26 +45,42 @@ describe('buildRecordHTML', () => {
   });
 });
 
-describe('buildRecordHTML — observeAnchor 引导', () => {
-  it('renders observeAnchor text in record form', () => {
+describe('buildRecordHTML — observeAnchor 填空', () => {
+  it('renders anchor question as label when observeAnchor present', () => {
     const html = buildRecordHTML({ activity: sampleActivity, focusSec: 90 });
     expect(html).toContain('孩子手部接触板面时的专注程度');
   });
 
-  it('renders obs-guide-card wrapper when observeAnchor present', () => {
+  it('renders fill-in input with data-anchor-index when observeAnchor present', () => {
     const html = buildRecordHTML({ activity: sampleActivity, focusSec: 0 });
-    expect(html).toContain('obs-guide-card');
+    expect(html).toContain('data-anchor-index="0"');
   });
 
-  it('does not render obs-guide-card when activity has no observeAnchor', () => {
-    const actNoAnchor = { ...sampleActivity, observeAnchor: undefined };
-    const html = buildRecordHTML({ activity: actNoAnchor, focusSec: 0 });
+  it('does NOT render obs-guide-card wrapper anymore', () => {
+    const html = buildRecordHTML({ activity: sampleActivity, focusSec: 0 });
     expect(html).not.toContain('obs-guide-card');
   });
 
-  it('note textarea placeholder references observeAnchor guidance', () => {
+  it('does not render fill-in inputs when activity has no observeAnchor', () => {
+    const actNoAnchor = { ...sampleActivity, observeAnchor: undefined };
+    const html = buildRecordHTML({ activity: actNoAnchor, focusSec: 0 });
+    expect(html).not.toContain('data-anchor-index');
+  });
+
+  it('hides fill-in section in edit mode (isEdit=true)', () => {
+    const html = buildRecordHTML({ activity: sampleActivity, focusSec: 0, isEdit: true });
+    expect(html).not.toContain('data-anchor-index');
+  });
+
+  it('note placeholder changes when observeAnchor present', () => {
     const html = buildRecordHTML({ activity: sampleActivity, focusSec: 0 });
-    expect(html).toContain('结合以上锚点');
+    expect(html).toContain('可在此补充其他观察');
+  });
+
+  it('note placeholder is default when no observeAnchor', () => {
+    const actNoAnchor = { ...sampleActivity, observeAnchor: undefined };
+    const html = buildRecordHTML({ activity: actNoAnchor, focusSec: 0 });
+    expect(html).toContain('记录你观察到的细节');
   });
 });
 
