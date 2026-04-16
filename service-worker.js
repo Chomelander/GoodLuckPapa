@@ -3,7 +3,7 @@
  * 策略：Cache-First — 所有资源本地化，无服务端 API，离线后完整可用
  * 升级缓存：修改 CACHE_NAME 版本号，旧缓存自动清理
  */
-const CACHE_NAME = 'qiqi-v2';
+const CACHE_NAME = 'qiqi-v3';
 
 const URLS_TO_CACHE = [
   '/',
@@ -29,6 +29,7 @@ const URLS_TO_CACHE = [
   '/js/ui/sop.js',
   '/js/ui/diary.js',
   '/js/ui/custom-activity.js',
+  '/js/ui/growth-records.js',
 ];
 
 // ── Install：预缓存所有静态资源 ───────────────────────────────
