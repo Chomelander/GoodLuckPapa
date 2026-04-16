@@ -168,7 +168,7 @@ export function showRecord({ actId, focusSec, existingRecord, manualEntry = fals
   const backdrop = document.getElementById('record-backdrop');
   const overlay = document.getElementById('record-overlay');
 
-  body.innerHTML = buildRecordHTML({ activity, focusSec, manualEntry });
+  body.innerHTML = buildRecordHTML({ activity, focusSec, manualEntry, isEdit: !!existingRecord });
 
   // 编辑模式：预填已有值
   if (existingRecord) {
@@ -258,6 +258,15 @@ if (typeof document !== 'undefined') {
     const emotion = document.querySelector('#emotion-control .seg-btn.active')?.dataset.emotion ?? 'calm';
     const initType = document.querySelector('#inittype-control .seg-btn.active')?.dataset.inittype ?? 'adult_led';
     const note = document.getElementById('record-note')?.value.trim() ?? '';
+
+    // 收集锚点填空答案（编辑模式下无此 input，安全返回空数组）
+    const anchorInputs = [...document.querySelectorAll('[data-anchor-index]')];
+    const anchorAnswers = anchorInputs.map(el => el.value);
+    const anchorQuestions = anchorInputs.map(el =>
+      el.previousElementSibling?.textContent?.trim() ?? ''
+    );
+    const mergedNote = mergeAnchorAnswers({ questions: anchorQuestions, answers: anchorAnswers, note });
+
     const existingId = form.dataset.recordId ? parseInt(form.dataset.recordId, 10) : null;
 
     const record = {
@@ -266,7 +275,7 @@ if (typeof document !== 'undefined') {
       focusSec,
       emotion,
       initType,
-      note,
+      note: mergedNote,
     };
 
     if (existingId) {
