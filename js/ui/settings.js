@@ -149,13 +149,6 @@ export function buildSettingsHTML({ profile, settings }) {
       </div>
     </div>
 
-    <div class="section" id="settings-records-section">
-      <div class="section-title">历史记录</div>
-      <div class="card" id="settings-records-list">
-        <p class="text-sec" style="text-align:center;padding:16px 0">加载中…</p>
-      </div>
-    </div>
-
     <div class="section" id="settings-custom-acts-section">
       <div class="flex-center gap-8" style="margin-bottom:8px">
         <span class="section-title" style="margin:0;flex:1">自定义活动</span>
@@ -314,96 +307,6 @@ export async function renderSettings() {
       alert('数据导入成功，请刷新页面');
     } catch {
       alert('导入失败：文件格式不正确');
-    }
-  });
-
-  // ── 历史记录管理 ──────────────────────────────────────────
-  const RECORDS_PAGE_SIZE = 20;
-  let recordsOffset = 0;
-
-  async function renderRecordsList(append = false) {
-    const list = body.querySelector('#settings-records-list');
-    if (!list) return;
-
-    const allRecords = (await state.db.getRecords())
-      .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
-    const page = allRecords.slice(recordsOffset, recordsOffset + RECORDS_PAGE_SIZE);
-
-    const EMOTION_MAP = { engaged: '专注', happy: '愉悦', calm: '平静', distracted: '分心', frustrated: '挫败' };
-    const INIT_MAP = { child_led: '孩子主导', adult_led: '成人引导', joint: '共同探索' };
-
-    const itemsHTML = page.map(r => {
-      const act = state.activities.find(a => a.id === r.actId);
-      const title = act?.title ?? r.actId;
-      const fmtSec = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-      return `
-        <div class="card" style="margin-bottom:8px;padding:10px 14px" id="sr-card-${r.id}">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="flex:1;font-size:14px;font-weight:500">${title}</span>
-            <span style="font-size:13px;color:var(--primary);font-weight:600">${fmtSec(r.focusSec ?? 0)}</span>
-          </div>
-          <div style="font-size:12px;color:var(--text-mute);margin-top:2px">
-            ${r.date ?? ''} · ${EMOTION_MAP[r.emotion] ?? ''} · ${INIT_MAP[r.initType] ?? ''}
-          </div>
-          <div id="sr-actions-${r.id}" style="margin-top:6px">
-            <button class="btn btn-ghost btn-sm" data-action="sr-delete" data-id="${r.id}"
-              style="color:var(--danger)">删除</button>
-          </div>
-        </div>`;
-    }).join('');
-
-    const hasMore = allRecords.length > recordsOffset + RECORDS_PAGE_SIZE;
-    const moreBtn = hasMore
-      ? `<button class="btn btn-ghost btn-sm btn-full" id="sr-load-more"
-           style="margin-top:4px">加载更多</button>`
-      : '';
-
-    if (!append) {
-      list.innerHTML = page.length === 0
-        ? `<p class="text-sec" style="text-align:center;padding:16px 0">暂无历史记录</p>`
-        : itemsHTML + moreBtn;
-    } else {
-      const existingMore = list.querySelector('#sr-load-more');
-      existingMore?.remove();
-      list.insertAdjacentHTML('beforeend', itemsHTML + moreBtn);
-    }
-  }
-
-  await renderRecordsList();
-
-  body.querySelector('#settings-records-list')?.addEventListener('click', async e => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const { action, id } = btn.dataset;
-    const numId = parseInt(id, 10);
-
-    if (action === 'sr-delete') {
-      const actionsEl = document.getElementById(`sr-actions-${id}`);
-      if (!actionsEl) return;
-      actionsEl.innerHTML = `
-        <span style="font-size:13px;color:var(--text-sec)">确认删除？</span>
-        <button class="btn btn-ghost btn-sm" data-action="sr-confirm" data-id="${id}"
-          style="color:var(--danger)">确认</button>
-        <button class="btn btn-ghost btn-sm" data-action="sr-cancel" data-id="${id}">取消</button>`;
-    } else if (action === 'sr-confirm') {
-      await state.db.deleteRecord(numId);
-      document.getElementById(`sr-card-${id}`)?.remove();
-    } else if (action === 'sr-cancel') {
-      const actionsEl = document.getElementById(`sr-actions-${id}`);
-      if (actionsEl) actionsEl.innerHTML = `
-        <button class="btn btn-ghost btn-sm" data-action="sr-delete" data-id="${id}"
-          style="color:var(--danger)">删除</button>`;
-    } else if (action === 'sr-load-more' || btn.id === 'sr-load-more') {
-      recordsOffset += RECORDS_PAGE_SIZE;
-      await renderRecordsList(true);
-    }
-  });
-
-  // 加载更多按钮（id 匹配）
-  body.querySelector('#settings-records-list')?.addEventListener('click', async e => {
-    if (e.target.id === 'sr-load-more') {
-      recordsOffset += RECORDS_PAGE_SIZE;
-      await renderRecordsList(true);
     }
   });
 
