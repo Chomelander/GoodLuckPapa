@@ -19,6 +19,11 @@ const DOMAIN_LABEL = {
   language:         '语言',
   emotional_social: '情绪社交',
   self_care:        '自理',
+  math:             '数学',
+  social:           '社会交往',
+  practical:        '日常生活',
+  sensory:          '感官',
+  habit:            '习惯',
 };
 
 export function buildGrowthHTML({ milestones, ageMonths, milestoneStates }) {
