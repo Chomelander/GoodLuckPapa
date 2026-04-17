@@ -4,7 +4,7 @@
  */
 import { openDB } from './db.js';
 import { calcAgeMonths, shouldShowReEntry } from './rules.js';
-import { ACTIVITIES } from './data/activities.js';
+import { ACTIVITIES } from './data/activities-complete.js';
 import { MILESTONES } from './data/milestones.js';
 import { renderOnboarding, bindOnboardingComplete } from './ui/onboarding.js';
 import { renderToday } from './ui/today.js';
