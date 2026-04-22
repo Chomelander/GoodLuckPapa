@@ -182,18 +182,62 @@ export function buildMonthlyFormHTML({ ageMonths }) {
     </div>`).join('');
 
   return `
-    <form id="monthly-form">
-      <div style="font-size:13px;color:var(--text-sec);margin-bottom:16px;line-height:1.6">
-        为孩子本月（${ageMonths}个月）在各维度的表现评分，1分=几乎没有观察，5分=非常突出。
+    <div class="section">
+      <form id="monthly-form">
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:13px;color:var(--text-sec);margin-bottom:16px;line-height:1.6">
+            为孩子本月（${ageMonths}个月）在各维度的表现评分，1分=几乎没有观察，5分=非常突出。
+          </div>
+          ${dimsHTML}
+        </div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="form-label" style="font-size:13px;font-weight:500;margin-bottom:8px">本月最大发现（选填）</div>
+          <textarea class="form-input form-textarea" id="monthly-note"
+            placeholder="这个月你最惊喜的观察是…" style="margin-bottom:0"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">保存复盘</button>
+      </form>
+    </div>`;
+}
+
+// ── buildMonthlySavedHTML ──────────────────────────────────
+
+function buildMonthlySavedHTML({ saved }) {
+  const dotsHTML = (score) => [1, 2, 3, 4, 5].map(v =>
+    `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:4px;
+      background:${v <= score ? 'var(--primary)' : 'var(--border)'}"></span>`
+  ).join('');
+
+  const scoresHTML = MONTHLY_DIMS.map(dim => {
+    const score = saved.scores?.[dim.id] ?? 0;
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;
+        border-bottom:1px solid var(--border)">
+        <div style="font-size:14px;color:var(--text)">${dim.label}</div>
+        <div style="display:flex;align-items:center">
+          ${score > 0 ? dotsHTML(score) : `<span style="font-size:12px;color:var(--text-mute)">未评</span>`}
+        </div>
+      </div>`;
+  }).join('');
+
+  const noteHTML = saved.note
+    ? `<div class="card" style="margin-bottom:0">
+        <div style="font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:8px">本月最大发现</div>
+        <div style="font-size:14px;line-height:1.7;color:var(--text)">${saved.note}</div>
+       </div>`
+    : '';
+
+  return `
+    <div class="section">
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:14px;font-weight:600;color:var(--text)">各维度评分</div>
+          <div style="font-size:12px;color:var(--primary);font-weight:500">已完成</div>
+        </div>
+        ${scoresHTML}
       </div>
-      ${dimsHTML}
-      <div class="form-group">
-        <label class="form-label">本月最大发现（选填）</label>
-        <textarea class="form-input form-textarea" id="monthly-note"
-          placeholder="这个月你最惊喜的观察是…"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary btn-full">保存复盘</button>
-    </form>`;
+      ${noteHTML}
+    </div>`;
 }
 
 // ── 浏览器端渲染（Growth tab 下方） ────────────────────────
@@ -232,10 +276,7 @@ export async function renderReview() {
     const month = state.today.slice(0, 7);
     const saved = await state.db.getMonthlyReview(month);
     monthlyEl.innerHTML = saved
-      ? `<div class="card" style="text-align:center;padding:24px">
-           <div style="font-size:24px;margin-bottom:8px">✓</div>
-           <p class="text-sec">本月复盘已完成</p>
-         </div>`
+      ? buildMonthlySavedHTML({ saved })
       : buildMonthlyFormHTML({ ageMonths: state.ageMonths });
 
     if (!saved) _bindMonthlySubmit(month);

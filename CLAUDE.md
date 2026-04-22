@@ -57,7 +57,12 @@ start prototype.html
 
 ### 需求说明书（起起成长 App 主文档）
 
-当前文件：`起起成长-需求说明书-v1.7.md`（最新版本为 v1.8，2026-04-15 发布，244 测试全通）
+当前文件：`起起成长-需求说明书-v1.8.md`（内部版本已升至 **v1.9**，2026-04-17 更新）
+
+**v1.9 新增内容**（数据库全量完成 + PWA 修复，已实装）：
+- 活动库全量完成：0-72月 143 条完整活动（`js/data/activities-complete.js`，2026-04-16）
+- 里程碑库全量完成：0-72月 216 条完整（10维度，observeTip/linkedMilestones 100%，`js/data/milestones.js`，2026-04-17）
+- CACHE_NAME 升至 qiqi-v4，SW 预缓存列表修正，domain 标签修复
 
 **v1.8 新增内容**（bug修复 + 功能增强，已实装）：
 - observeAnchor 填空引导：记录表单拆分 observeAnchor 为逐条问题，逐问填答后合并到 note
@@ -101,8 +106,8 @@ CSS 变量集中在 `:root`（颜色、圆角、阴影）；页面切换使用 `
 ### 当前进度
 - **状态**：v1.8 已实装，244 测试全通，浏览器 Golden Path 验收完成
 - **活动库**：**0-72月（0-6岁）143 条完整数据**，`js/data/activities-complete.js`（2026-04-16 完成，Golden Path 14/14 通过）
-- **里程碑库**：9 条示范（含 observeTip）；30-40 条完整数据延后 P1
-- **数据文件**：`js/data/activities-complete.js`（主文件）+ `milestone-sample-phase1.js`
+- **里程碑库**：**0-72月 216 条完整**（10维度，observeTip/linkedMilestones 100%，`js/data/milestones.js`，2026-04-17）
+- **数据文件**：`js/data/activities-complete.js`（活动主文件）+ `js/data/milestones.js`（里程碑主文件）
 
 ### 包含的功能模块（MVP P0）
 | 模块 | 说明 |
@@ -131,7 +136,6 @@ CSS 变量集中在 `:root`（颜色、圆角、阴影）；页面切换使用 `
 | **M_RecordManage** | **历史记录管理**（v1.7新，设置页分页查删） |
 
 ### 延后 P1 的功能
-- 全部里程碑 observeTip 补全（30-40条）
 - Claude API 接入 + AI 周方案生成
 - AI 里程碑分析、兴趣报告
 - 月/季度复盘的 AI 辅助
@@ -191,7 +195,8 @@ DB_VERSION: **2**（v1.7 升级，新增 Store 7/8）
 |------|------|------|
 | `js/data/activities-complete.js` | **0-72月 143条完整活动**（2026-04-16，Golden Path 14/14 通过） | ✅ **主文件** |
 | `js/data/activities.js` | 旧版 0-6月 7条 | ⚠️ DEPRECATED，勿引用 |
-| `milestone-sample-phase1.js` | 9条示范里程碑含 observeTip | 参考 |
+| `js/data/milestones.js` | **0-72月 216条完整里程碑**（10维度，observeTip/linkedMilestones 100%，2026-04-17） | ✅ **主文件** |
+| `milestone-sample-phase1.js` | 9条示范里程碑（历史归档） | ⚠️ 已被 milestones.js 取代 |
 | `activity-sample-phase1.js` | 3条示范活动（历史归档） | 参考 |
 | `PHASE2-COMPLETION-REPORT.md` | Phase 2 完成报告 | 参考 |
 | `PHASE1-REVIEW-CHECKLIST.md` | Phase 1 评审清单 | 参考 |
@@ -215,7 +220,7 @@ DB_VERSION: **2**（v1.7 升级，新增 Store 7/8）
 
 - [x] 需求说明书 v1.8 已实装（244 测试全通，Golden Path 验收通过）
 - [x] 活动库完整（**143条 0-72月**，`js/data/activities-complete.js`，14/14 验收通过，2026-04-16）
-- [x] 里程碑库包含 observeTip（9条示范已导入，30-40条延后 P1）
+- [x] 里程碑库完整（**216条 0-72月**，observeTip/linkedMilestones 100%，`js/data/milestones.js`，2026-04-17）
 - [x] IndexedDB schema 包含全部 8 个 store（DB_VERSION 2）
 - [x] 原型 CSS 变量完整迁移
 - [x] 轻/中/重三模式切换逻辑已实现（guideIntensity 全局状态）
@@ -235,5 +240,5 @@ DB_VERSION: **2**（v1.7 升级，新增 Store 7/8）
 
 - **多源融合**：本项目结合了 WHO、CDC、蒙台梭利、皮亚杰、多元智能等多个理论框架。需求说明书中每条规范都有理论依据。
 - **小白父母导向**：系统设计最终目标是让新手父母也能"学会观察"，而不仅是记录。UI 复杂度通过「轻/中/重」模式在原型层面解决。
-- **渐进式数据补全**：MVP 仅用 0-6月活动 + 9条示范里程碑验证可行性，6-12月活动和完整里程碑在 P1 批量导入。
+- **数据库已全量完成**：活动库 143条（0-72月）+ 里程碑库 216条（0-72月，10维度），P0 阶段数据基础完整，P1 专注 AI 功能引入。
 - **无 AI 约束**：MVP 不包含任何 AI 调用，所有推荐和识别均为规则驱动（F规则、G规则）。P1 才引入 Claude API。

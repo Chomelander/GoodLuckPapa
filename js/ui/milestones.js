@@ -6,6 +6,11 @@ import { getMilestoneStatus } from '../rules.js';
 import { buildDiaryTimelineHTML } from './diary.js';
 import { buildActivityRecordsHTML } from './growth-records.js';
 
+// ── 分页状态（模块级）────────────────────────────────────────
+let _groupIdx = 0;
+let _groups = [];           // 排序后的唯一 windowStart 值
+let _cachedMilestoneStates = {};
+
 const STATUS_LABEL = {
   pending:  '待观察',
   watching: '观察中',
@@ -97,44 +102,94 @@ export function buildMilestoneConfirmHTML({ milestone, status }) {
     ${linkedActSection}`;
 }
 
+// ── 分页辅助函数 ──────────────────────────────────────────
+
+function _initGroups(ageMonths) {
+  const starts = [...new Set(state.milestones.map(m => m.windowStart))].sort((a, b) => a - b);
+  _groups = starts;
+  _groupIdx = 0;
+  for (let i = 0; i < starts.length; i++) {
+    if (starts[i] <= ageMonths) _groupIdx = i;
+  }
+}
+
+function _buildNavHTML() {
+  const start = _groups[_groupIdx];
+  const groupMs = state.milestones.filter(m => m.windowStart === start);
+  const end = groupMs.length ? Math.max(...groupMs.map(m => m.windowEnd)) : start;
+  const label = start === end ? `${start}个月` : `${start}–${end}个月`;
+  const hasPrev = _groupIdx > 0;
+  const hasNext = _groupIdx < _groups.length - 1;
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 4px">
+      <button class="btn btn-ghost btn-sm" data-milestone-nav="prev"
+        style="${hasPrev ? '' : 'opacity:.35;pointer-events:none'}">← 上一阶段</button>
+      <span style="font-size:14px;font-weight:600;color:var(--text)">${label}</span>
+      <button class="btn btn-ghost btn-sm" data-milestone-nav="next"
+        style="${hasNext ? '' : 'opacity:.35;pointer-events:none'}">下一阶段 →</button>
+    </div>`;
+}
+
+function _renderMilestoneSection() {
+  const section = document.getElementById('milestone-section');
+  if (!section) return;
+  const start = _groups[_groupIdx];
+  const filtered = state.milestones.filter(m => m.windowStart === start);
+  section.innerHTML = _buildNavHTML() + buildGrowthHTML({
+    milestones: filtered,
+    ageMonths: state.ageMonths,
+    milestoneStates: _cachedMilestoneStates,
+  });
+}
+
 // ── 浏览器端渲染 ──────────────────────────────────────────
 
 export async function renderGrowth() {
   const body = document.getElementById('growth-body');
   if (!body) return;
 
-  // Load saved milestone states
-  const milestoneStates = {};
+  // 加载里程碑达成状态
+  _cachedMilestoneStates = {};
   for (const m of state.milestones) {
     const saved = await state.db.getMilestoneState(m.id);
-    if (saved) milestoneStates[m.id] = saved;
+    if (saved) _cachedMilestoneStates[m.id] = saved;
   }
 
-  // 日记时间线 + 活动记录时间线插在里程碑前面
+  // 初始化分页，默认定位到当前月龄
+  _initGroups(state.ageMonths);
+
+  // 日记时间线 + 活动记录时间线 + 里程碑占位
   const [diaries, records] = await Promise.all([
     state.db.getDiaries(),
     state.db.getRecords(),
   ]);
   body.innerHTML = buildDiaryTimelineHTML({ entries: diaries })
     + `<div id="activity-records-section">${buildActivityRecordsHTML({ records, activities: state.activities })}</div>`
-    + buildGrowthHTML({
-        milestones: state.milestones,
-        ageMonths: state.ageMonths,
-        milestoneStates,
-      });
+    + `<div id="milestone-section"></div>`;
+
+  _renderMilestoneSection();
 
   body.addEventListener('click', e => {
+    // 翻页导航
+    const navBtn = e.target.closest('[data-milestone-nav]');
+    if (navBtn) {
+      const dir = navBtn.dataset.milestoneNav;
+      if (dir === 'prev' && _groupIdx > 0) { _groupIdx--; _renderMilestoneSection(); }
+      if (dir === 'next' && _groupIdx < _groups.length - 1) { _groupIdx++; _renderMilestoneSection(); }
+      return;
+    }
+    // 里程碑卡片点击
     const card = e.target.closest('[data-milestoneid]');
     if (!card) return;
-    _showMilestoneConfirm(card.dataset.milestoneid, milestoneStates);
+    _showMilestoneConfirm(card.dataset.milestoneid);
   });
 }
 
-function _showMilestoneConfirm(milestoneId, milestoneStates) {
+function _showMilestoneConfirm(milestoneId) {
   const milestone = state.milestones.find(m => m.id === milestoneId);
   if (!milestone) return;
 
-  const saved = milestoneStates[milestoneId];
+  const saved = _cachedMilestoneStates[milestoneId];
   const status = saved?.status
     ?? getMilestoneStatus({
          ageMonths: state.ageMonths,
@@ -160,9 +215,9 @@ function _showMilestoneConfirm(milestoneId, milestoneStates) {
     ?.addEventListener('click', async () => {
       const achievedDate = state.today;
       await state.db.saveMilestoneState(milestoneId, { status: 'achieved', achievedDate });
-      milestoneStates[milestoneId] = { status: 'achieved', achievedDate };
+      _cachedMilestoneStates[milestoneId] = { status: 'achieved', achievedDate };
       close();
-      renderGrowth(); // refresh
+      _renderMilestoneSection(); // 仅刷新里程碑区域，保留当前翻页位置
     });
 
   backdrop.addEventListener('click', close, { once: true });
