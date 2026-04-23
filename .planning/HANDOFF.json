@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-04-23T07:04:46Z",
+  "phase": "01",
+  "phase_name": "cf-workers-skeleton",
+  "phase_dir": ".planning/phases/01-cf-workers-skeleton",
+  "plan": 1,
+  "task": 0,
+  "total_tasks": 6,
+  "status": "paused",
+  "completed_tasks": [],
+  "remaining_tasks": [
+    {"id": 1, "name": "Worker 项目骨架 + 路由挂载 + 健康检查", "status": "not_started"},
+    {"id": 2, "name": "D1 数据库 migration 建表", "status": "not_started"},
+    {"id": 3, "name": "Vitest 测试基础设施 + 认证中间件测试", "status": "not_started"},
+    {"id": 4, "name": "微信登录 /api/auth/login 路由", "status": "not_started"},
+    {"id": 5, "name": "profile + activities + milestones 路由", "status": "not_started"},
+    {"id": 6, "name": "records + diary + review 路由", "status": "not_started"}
+  ],
+  "blockers": [],
+  "human_actions_pending": [
+    {
+      "action": "执行 /gsd-execute-phase 开始 Phase 01 执行",
+      "context": "6 个 Plan 已就绪，worker/ 目录尚不存在，等待首次执行",
+      "blocking": false
+    }
+  ],
+  "decisions": [
+    {"decision": "用 Hono + CF Workers + D1 作为后端技术栈", "rationale": "轻量、边缘部署、免费额度充足，匹配 P1 个人版规模", "phase": "01"},
+    {"decision": "JWT 签名显式指定 alg: HS256", "rationale": "防止 CVE-2026-22817（algorithm confusion attack）", "phase": "01"},
+    {"decision": "secrets 不入 wrangler.toml，走 .dev.vars / CF Secrets", "rationale": "安全边界清晰，防止密钥泄漏到 git", "phase": "01"}
+  ],
+  "uncommitted_files": ["js/data/milestones.js.bak"],
+  "next_action": "执行 /gsd-execute-phase 从 Plan 01-01 开始创建 worker/ 项目骨架",
+  "context_notes": "Phase 01 规划阶段（research + context + patterns + 6 plans）已全部完成并 committed。执行阶段尚未开始，worker/ 目录不存在。6 个 Plan 按 wave 顺序：wave1(01-01, 01-02), wave2(01-03), wave3(01-04, 01-05, 01-06)。"
+}
