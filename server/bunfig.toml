@@ -1,0 +1,5 @@
+[build]
+target = "bun"
+
+[test]
+timeout = 5000

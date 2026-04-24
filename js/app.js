@@ -10,6 +10,7 @@ import { renderOnboarding, bindOnboardingComplete } from './ui/onboarding.js';
 import { renderToday } from './ui/today.js';
 import { renderActivities, showActivityDetail } from './ui/activities.js';
 import { renderGrowth } from './ui/milestones.js';
+import { renderMoments } from './ui/moments.js';
 import { renderSettings } from './ui/settings.js';
 import { showReEntry } from './ui/reentry.js';
 import { showTimer } from './ui/timer.js';
@@ -37,7 +38,7 @@ export function fmtAge(months) {
 }
 
 // ── Tab 切换 ──────────────────────────────────────────────
-const TABS = ['today', 'activities', 'growth', 'settings'];
+const TABS = ['today', 'activities', 'growth', 'moments', 'settings'];
 
 function switchTab(tab) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -49,6 +50,7 @@ function switchTab(tab) {
   if (tab === 'today') renderToday();
   if (tab === 'activities') renderActivities();
   if (tab === 'growth') { renderGrowth(); renderReview(); }
+  if (tab === 'moments') renderMoments();
   if (tab === 'settings') renderSettings();
 }
 

@@ -3,8 +3,7 @@
  */
 import { state } from '../app.js';
 import { getMilestoneStatus } from '../rules.js';
-import { buildDiaryTimelineHTML } from './diary.js';
-import { buildActivityRecordsHTML } from './growth-records.js';
+// 注：日记和活动记录已移至 moments.js（时光选项卡）
 
 // ── 分页状态（模块级）────────────────────────────────────────
 let _groupIdx = 0;
@@ -158,14 +157,8 @@ export async function renderGrowth() {
   // 初始化分页，默认定位到当前月龄
   _initGroups(state.ageMonths);
 
-  // 日记时间线 + 活动记录时间线 + 里程碑占位
-  const [diaries, records] = await Promise.all([
-    state.db.getDiaries(),
-    state.db.getRecords(),
-  ]);
-  body.innerHTML = buildDiaryTimelineHTML({ entries: diaries })
-    + `<div id="activity-records-section">${buildActivityRecordsHTML({ records, activities: state.activities })}</div>`
-    + `<div id="milestone-section"></div>`;
+  // 仅保留里程碑分阶段展示（日记和活动记录已移至时光选项卡）
+  body.innerHTML = `<div id="milestone-section"></div>`;
 
   _renderMilestoneSection();
 

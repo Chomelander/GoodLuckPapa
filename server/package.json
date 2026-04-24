@@ -1,0 +1,12 @@
+{
+  "name": "qiqi-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build src/index.ts --outfile dist/index.js",
+    "start": "bun dist/index.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
