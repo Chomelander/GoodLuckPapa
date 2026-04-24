@@ -57,7 +57,18 @@ start prototype.html
 
 ### 需求说明书（起起成长 App 主文档）
 
-当前文件：`起起成长-需求说明书-v1.8.md`（内部版本已升至 **v1.9**，2026-04-17 更新）
+当前文件：`起起成长-需求说明书-v1.8.md`（内部版本已升至 **v2.0**，2026-04-24 更新）
+
+**v2.0 新增内容**（Tab 重构 + NAS 后端 + 时光增删改，已实装，2026-04-24）：
+- **Tab 结构重构**：活动库 Tab 移除，适龄活动库合并入今日 Tab 推荐下方；Tab 栏 5 个 → 4 个（今日 / 成长 / 时光 / 设置）
+- **M_Moments（时光 Tab）**：新增，微信朋友圈式瀑布流，合并育儿日记 + 活动记录，支持完整增删改
+  - 发：时光页右上角 + 按钮 → 日记 overlay
+  - 改：点击卡片正文区 → 预填 overlay（日记 / 记录）
+  - 删：× 按钮（原有）
+- **成长 Tab 精简**：移除日记/活动记录时间线，仅保留里程碑分阶段导航
+- **NAS 后端**（server/）：Bun + SQLite + Docker Compose，JWT PIN 认证，REST API（/api/health、/api/auth/pin、/api/profile、/api/records、/api/diary、/api/milestones/states）
+- **前端同步层**（js/sync.js）：push-only fire-and-forget，未配置 API 时静默跳过，支持 pushRecord/pushDiary/pushProfile/pushMilestoneState/deleteRecord/deleteDiary/pullAll
+- **日记字段说明**：diaryEntries 存储 `{changes, feelings, images:[{name,dataUrl}]}`，moments.js 合并显示两段内容
 
 **v1.9 新增内容**（数据库全量完成 + PWA 修复，已实装）：
 - 活动库全量完成：0-72月 143 条完整活动（`js/data/activities-complete.js`，2026-04-16）
@@ -67,14 +78,14 @@ start prototype.html
 **v1.8 新增内容**（bug修复 + 功能增强，已实装）：
 - observeAnchor 填空引导：记录表单拆分 observeAnchor 为逐条问题，逐问填答后合并到 note
 - M_ActivityTimeline：成长 Tab 活动记录时间线（`growth-records.js`，年/周折叠，支持编辑/删除）
-- 历史记录管理迁移：从设置页移除，改至成长 Tab 时间线展示
+- 历史记录管理迁移：从设置页移除，改至成长 Tab 时间线展示（v2.0 已移至时光 Tab）
 - PWA 自动更新：`controllerchange` 事件 + 顶部提示条，CACHE_NAME 升至 qiqi-v3
 
 **v1.7 新增内容**（用户内容管理模块，已实装）：
-- M_Diary：育儿日记（今日 Tab + 按钮，成长 Tab 三级折叠时间线）
+- M_Diary：育儿日记（今日 Tab + 按钮，成长 Tab 三级折叠时间线；v2.0 重构至时光 Tab）
 - M_RecordEdit：今日记录编辑/删除（inline confirm）
 - M_CustomActivity：自定义活动库管理（设置页，增查改删，合并入推荐）
-- M_RecordManage：历史记录管理（v1.8 已迁移至成长 Tab）
+- M_RecordManage：历史记录管理（v2.0 已迁移至时光 Tab）
 - IndexedDB DB_VERSION 2，新增 Store 7 diaryEntries + Store 8 customActivities
 
 **v1.6 新增内容**（已实装）：
@@ -83,7 +94,7 @@ start prototype.html
 - M4.5：正向会话结束卡片（记录后展示「本次观察的意义」反馈，自然结束）
 - M8.5：月度复盘（蒙氏 10 维度评估 + 环境调整建议 + 优势发现）
 
-该文档是双轨融合（分类方案 + App 设计）的产物，涵盖：数据结构、MVP 功能模块（M1-M9 + M_GuideIntensity + M_ObsGuide + M_Onboarding + M_MilestoneConfirm + M_ReEntry + M_Diary + M_RecordEdit + M_CustomActivity + M_RecordManage + M_ActivityTimeline）、页面结构、技术规范。**开发以此文档为准，PRD 仅作历史参考。**
+该文档是双轨融合（分类方案 + App 设计）的产物，涵盖：数据结构、MVP 功能模块（M1-M9 + M_GuideIntensity + M_ObsGuide + M_Onboarding + M_MilestoneConfirm + M_ReEntry + M_Diary + M_RecordEdit + M_CustomActivity + M_RecordManage + **M_Moments**）、页面结构、技术规范。**开发以此文档为准，PRD 仅作历史参考。**
 
 ### PRD（起起成长 App）
 
