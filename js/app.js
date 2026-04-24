@@ -38,7 +38,7 @@ export function fmtAge(months) {
 }
 
 // ── Tab 切换 ──────────────────────────────────────────────
-const TABS = ['today', 'activities', 'growth', 'moments', 'settings'];
+const TABS = ['today', 'growth', 'moments', 'settings'];
 
 function switchTab(tab) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -46,9 +46,8 @@ function switchTab(tab) {
   document.getElementById(`page-${tab}`)?.classList.add('active');
   document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
 
-  // 懒加载渲染
-  if (tab === 'today') renderToday();
-  if (tab === 'activities') renderActivities();
+  // 懒加载渲染（activities 合并到 today）
+  if (tab === 'today') { renderToday(); renderActivities(); }
   if (tab === 'growth') { renderGrowth(); renderReview(); }
   if (tab === 'moments') renderMoments();
   if (tab === 'settings') renderSettings();
@@ -115,7 +114,18 @@ async function startApp() {
   document.addEventListener('record:edit', e => {
     showRecord({ actId: e.detail.record.actId, focusSec: e.detail.record.focusSec, existingRecord: e.detail.record });
   });
-  document.addEventListener('record:updated', () => renderToday());
+  document.addEventListener('record:updated', () => {
+    renderToday();
+    if (document.getElementById('page-moments')?.classList.contains('active')) renderMoments();
+  });
+  // 时光页 + 按钮
+  document.getElementById('btn-moments-add')?.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('diary:open'));
+  });
+  // 日记保存后刷新时光页
+  document.addEventListener('diary:saved', () => {
+    if (document.getElementById('page-moments')?.classList.contains('active')) renderMoments();
+  });
 
   // 渲染今日Tab
   renderToday();

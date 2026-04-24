@@ -83,7 +83,7 @@
 
   <!-- ══ Tab Pages ══════════════════════════════════════ -->
 
-  <!-- Today — 今日 -->
+  <!-- Today — 今日（含适龄活动库） -->
   <div id="page-today" class="page active" role="main">
     <div class="page-header">
       <h1>今日</h1>
@@ -92,11 +92,6 @@
       <button class="btn btn-ghost btn-sm" id="btn-diary-add" aria-label="记录今日感想" style="font-size:20px;line-height:1;padding:0 8px;margin-left:8px">+</button>
     </div>
     <div id="today-body"><!-- rendered by today.js --></div>
-  </div>
-
-  <!-- Activities — 活动库 -->
-  <div id="page-activities" class="page" role="main">
-    <div class="page-header"><h1>活动库</h1></div>
     <div id="activities-body"><!-- rendered by activities.js --></div>
   </div>
 
@@ -110,7 +105,11 @@
 
   <!-- Moments — 时光（育儿日记 + 活动记录时间线） -->
   <div id="page-moments" class="page" role="main">
-    <div class="page-header"><h1>时光</h1></div>
+    <div class="page-header">
+      <h1>时光</h1>
+      <span class="flex-1"></span>
+      <button class="btn btn-ghost btn-sm" id="btn-moments-add" aria-label="记录新感想" style="font-size:20px;line-height:1;padding:0 8px">+</button>
+    </div>
     <div id="moments-body"><!-- rendered by moments.js --></div>
   </div>
 
@@ -127,13 +126,6 @@
         <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
       </svg>
       今日
-    </button>
-    <button class="tab-btn" data-tab="activities" aria-label="活动库">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-      </svg>
-      活动库
     </button>
     <button class="tab-btn" data-tab="growth" aria-label="成长">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

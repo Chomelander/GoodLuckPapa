@@ -430,6 +430,20 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   color: #666;
 }
 
+.moment-edit-hint {
+  font-size: 11px;
+  color: var(--text-mute);
+  text-align: right;
+  margin-top: 8px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.moment-card:hover .moment-edit-hint,
+.moment-card:active .moment-edit-hint {
+  opacity: 1;
+}
+
 .moment-content {
   color: var(--text-main);
   line-height: 1.6;

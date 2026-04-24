@@ -182,7 +182,7 @@ export async function renderToday() {
     + buildTodayCompletedHTML({ records, activities: state.activities, today: state.today })
     + buildSopHTML({ guideIntensity });
 
-  body.addEventListener('click', async e => {
+  body.onclick = async e => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
     const { action, id } = btn.dataset;
@@ -214,5 +214,5 @@ export async function renderToday() {
     } else if (action === 'cancel-delete') {
       renderToday();
     }
-  });
+  };
 }
