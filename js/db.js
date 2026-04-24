@@ -11,6 +11,8 @@
  *
  * @param {IDBFactory} [idbFactory] - 可注入 fake-indexeddb 用于测试
  */
+import * as sync from './sync.js';
+
 export async function openDB(idbFactory = globalThis.indexedDB) {
   const DB_NAME = 'qiqi-app';
   const DB_VERSION = 2;
@@ -53,13 +55,16 @@ export async function openDB(idbFactory = globalThis.indexedDB) {
     async saveProfile(data) {
       const store = tx('profile', 'readwrite').objectStore('profile');
       await rq(store.put({ ...data }, 'profile'));
+      sync.pushProfile(data);
     },
 
     // ── Records ─────────────────────────────────────────
 
     async addRecord(record) {
       const store = tx('records', 'readwrite').objectStore('records');
-      return rq(store.add({ ...record, createdAt: new Date().toISOString() }));
+      const id = await rq(store.add({ ...record, createdAt: new Date().toISOString() }));
+      sync.pushRecord(record);
+      return id;
     },
 
     async getRecords() {
@@ -85,6 +90,7 @@ export async function openDB(idbFactory = globalThis.indexedDB) {
 
     async deleteRecord(id) {
       await rq(tx('records', 'readwrite').objectStore('records').delete(id));
+      sync.deleteRecord(id);
     },
 
     // ── Milestones ───────────────────────────────────────
@@ -95,6 +101,7 @@ export async function openDB(idbFactory = globalThis.indexedDB) {
 
     async saveMilestoneState(id, state) {
       await rq(tx('milestones', 'readwrite').objectStore('milestones').put(state, id));
+      sync.pushMilestoneState(id, state);
     },
 
     // ── Settings ─────────────────────────────────────────
@@ -123,7 +130,9 @@ export async function openDB(idbFactory = globalThis.indexedDB) {
 
     async addDiary(entry) {
       const store = tx('diaryEntries', 'readwrite').objectStore('diaryEntries');
-      return rq(store.add({ ...entry, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }));
+      const id = await rq(store.add({ ...entry, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }));
+      sync.pushDiary(entry);
+      return id;
     },
 
     async getDiaries() {
@@ -139,6 +148,7 @@ export async function openDB(idbFactory = globalThis.indexedDB) {
 
     async deleteDiary(id) {
       await rq(tx('diaryEntries', 'readwrite').objectStore('diaryEntries').delete(id));
+      sync.deleteDiary(id);
     },
 
     // ── Custom Activities ─────────────────────────────────

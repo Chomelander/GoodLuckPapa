@@ -2,6 +2,7 @@
  * 时光选项卡：微信朋友圈式瀑布流展示
  * 合并育儿日记 + 活动记录，按日期倒序排列
  */
+import { state } from '../app.js';
 
 export async function renderMoments() {
   const body = document.getElementById('moments-body');
@@ -49,13 +50,6 @@ export async function renderMoments() {
   moments.forEach(m => {
     const date = m.timestamp.split('T')[0]; // YYYY-MM-DD
     if (!groupedByDate.has(date)) {
-      groupedByDate.get = function(key) {
-        return Map.prototype.get.call(this, key) || (() => {
-          const arr = [];
-          Map.prototype.set.call(this, key, arr);
-          return arr;
-        })();
-      };
       groupedByDate.set(date, []);
     }
     groupedByDate.get(date).push(m);

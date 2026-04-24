@@ -136,6 +136,18 @@ const server = Bun.serve({
         }
       }
 
+      // DELETE /api/records/:id
+      if (path.match(/^\/api\/records\/\d+$/) && req.method === "DELETE") {
+        const recordId = parseInt(path.split("/")[3], 10);
+        const record = db.deleteRecord(recordId, userId);
+        const response: types.APIResponse = {
+          success: true,
+          data: record,
+          error: null
+        };
+        return new Response(JSON.stringify(response), { status: 200, headers });
+      }
+
       // ═══════════════════════════════════════════════
       // Diary API
       // ═══════════════════════════════════════════════
@@ -162,6 +174,18 @@ const server = Bun.serve({
           };
           return new Response(JSON.stringify(response), { status: 201, headers });
         }
+      }
+
+      // DELETE /api/diary/:id
+      if (path.match(/^\/api\/diary\/\d+$/) && req.method === "DELETE") {
+        const entryId = parseInt(path.split("/")[3], 10);
+        const entry = db.deleteDiaryEntry(entryId, userId);
+        const response: types.APIResponse = {
+          success: true,
+          data: entry,
+          error: null
+        };
+        return new Response(JSON.stringify(response), { status: 200, headers });
       }
 
       // ═══════════════════════════════════════════════
