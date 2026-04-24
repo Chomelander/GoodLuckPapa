@@ -80,8 +80,8 @@ export async function renderMoments() {
   html += `</div>`;
   body.innerHTML = html;
 
-  // 事件委托
-  body.addEventListener('click', e => {
+  // 事件委托（替换 onclick 避免多次调用时监听器叠加）
+  body.onclick = e => {
     // 日记卡片点击删除按钮
     const delBtn = e.target.closest('[data-diary-del]');
     if (delBtn) {
@@ -105,7 +105,7 @@ export async function renderMoments() {
       showImagePreview(url);
       return;
     }
-  });
+  };
 }
 
 // ═══════════════════════════════════════════════
@@ -153,20 +153,21 @@ function buildDiaryCard(moment) {
 
 function buildRecordCard(moment, activities) {
   const r = moment.data;
-  const activity = activities.find(a => a.id === r.activityId);
-  const activityName = activity?.name || r.activityId;
+  const activity = activities.find(a => a.id === r.actId);
+  const activityName = activity?.name || r.actId;
   const time = new Date(r.createdAt).toLocaleTimeString('zh-CN', {
     hour: '2-digit',
     minute: '2-digit'
   });
 
   const focusMin = Math.round((r.focusSec || 0) / 60);
-  const emotionEmoji = {
-    'concentrated': '😊',
-    'joyful': '😄',
-    'distracted': '😐',
-    'frustrated': '😞'
-  }[r.emotion] || '😊';
+  const EMOTION_MAP = {
+    'concentrated': { emoji: '😊', label: '专注' },
+    'joyful':       { emoji: '😄', label: '愉快' },
+    'distracted':   { emoji: '😐', label: '分散' },
+    'frustrated':   { emoji: '😞', label: '受挫' },
+  };
+  const emotion = EMOTION_MAP[r.emotion] ?? { emoji: '😊', label: r.emotion || '未记录' };
 
   return `
     <div class="moment-card record-card" data-moment-id="${moment.id}">
@@ -181,7 +182,7 @@ function buildRecordCard(moment, activities) {
         </div>
         <div class="record-stats">
           ${r.focusSec ? `<span class="record-stat">⏱ ${focusMin} 分钟</span>` : ''}
-          <span class="record-stat">${emotionEmoji} ${r.emotion || '未记录'}</span>
+          <span class="record-stat">${emotion.emoji} ${emotion.label}</span>
         </div>
         ${r.initType ? `<div class="record-type">${r.initType === 'child-led' ? '👶 主动' : '👩 引导'}</div>` : ''}
         ${r.note ? `<p class="record-note">${escapeHTML(r.note)}</p>` : ''}
