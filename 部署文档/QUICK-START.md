@@ -51,10 +51,11 @@ DATA_PATH=/mnt/nas/qiqi-data
 
 ```bash
 mkdir -p /mnt/nas/qiqi-data
-docker-compose up -d
+docker compose up 
 ```
 
 **检查状态：**
+
 ```bash
 docker-compose ps
 # 应显示 2 个 running 的容器
@@ -111,15 +112,17 @@ docker-compose logs
 ### 端口 80 被占用？
 
 修改 `docker-compose.yml`：
+
 ```yaml
 ports:
-  - "8888:80"  # 改为 8888
+  - "8088:80"  # 改为 8088
 ```
 
 重启：
+
 ```bash
 docker-compose down && docker-compose up -d
-访问：http://192.168.9.3:8888
+访问：http://192.168.9.3:8088
 ```
 
 ### 需要停止服务？
