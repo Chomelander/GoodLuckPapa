@@ -4,6 +4,7 @@
  */
 import { state } from '../app.js';
 import { evaluateInterest, calcTypicalSec } from '../rules.js';
+import { pushRecord } from '../sync.js';
 
 export function parseAnchorQuestions(str) {
   if (!str) return [];
@@ -283,6 +284,7 @@ if (typeof document !== 'undefined') {
     } else {
       record.createdAt = Date.now();
       await state.db.addRecord(record);
+      pushRecord(record);  // ← sync 同步
     }
 
     // F规则判断

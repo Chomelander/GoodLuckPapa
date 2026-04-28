@@ -3,6 +3,7 @@
  * 功能：写日记 overlay（结构化表单 + 图片上传压缩）+ 成长 Tab 时间线
  */
 import { state } from '../app.js';
+import { pushDiary } from '../sync.js';
 
 const MAX_IMAGES = 4;
 const IMG_MAX_PX = 1200;
@@ -261,6 +262,11 @@ export function showDiaryOverlay({ entry } = {}) {
       await state.db.updateDiary(parseInt(entryId, 10), entryData);
     } else {
       await state.db.addDiary(entryData);
+      // sync 同步（字段映射：changes/feelings → content）
+      pushDiary({
+        content: [entryData.changes, entryData.feelings].filter(Boolean).join('\n\n'),
+        imageUrls: (entryData.images || []).map(img => img.name),
+      });
     }
 
     hideDiaryOverlay();

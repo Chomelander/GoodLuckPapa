@@ -3,6 +3,7 @@
  */
 import { state } from '../app.js';
 import { getMilestoneStatus } from '../rules.js';
+import { pushMilestoneState } from '../sync.js';
 // 注：日记和活动记录已移至 moments.js（时光选项卡）
 
 // ── 分页状态（模块级）────────────────────────────────────────
@@ -208,6 +209,7 @@ function _showMilestoneConfirm(milestoneId) {
     ?.addEventListener('click', async () => {
       const achievedDate = state.today;
       await state.db.saveMilestoneState(milestoneId, { status: 'achieved', achievedDate });
+      pushMilestoneState(milestoneId, { status: 'achieved', achievedDate });  // ← sync 同步
       _cachedMilestoneStates[milestoneId] = { status: 'achieved', achievedDate };
       close();
       _renderMilestoneSection(); // 仅刷新里程碑区域，保留当前翻页位置

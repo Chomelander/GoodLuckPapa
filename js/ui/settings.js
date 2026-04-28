@@ -1,9 +1,11 @@
 /**
  * 设置页 + M6.5 情境化正向提示
  * M9: 数据导出/导入
+ * NAS 数据同步配置
  */
 import { state } from '../app.js';
 import { showCustomActOverlay } from './custom-activity.js';
+import { isConfigured, setApiBase, login, clearAuth, pushProfile } from '../sync.js';
 
 // ── M6.5 情境化正向提示（不禁令，只支持）─────────────────
 const POSITIVE_TIPS = {
@@ -137,6 +139,27 @@ export function buildSettingsHTML({ profile, settings }) {
     </div>
 
     <div class="section">
+      <div class="section-title">NAS 数据同步</div>
+      <div class="card">
+        <div style="margin-bottom:12px">
+          <label style="font-size:13px;color:var(--text-sec);display:block;margin-bottom:4px">API 地址</label>
+          <input id="api-base-input" type="url" placeholder="http://192.168.x.x:8088"
+            style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:14px;box-sizing:border-box">
+        </div>
+        <div style="margin-bottom:12px" id="pin-row" style="display:none">
+          <label style="font-size:13px;color:var(--text-sec);display:block;margin-bottom:4px">PIN 码</label>
+          <div style="display:flex;gap:8px">
+            <input id="pin-input" type="password" placeholder="输入 PIN 码"
+              style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:14px;box-sizing:border-box">
+            <button id="pin-login-btn" class="btn btn-secondary btn-sm">连接</button>
+          </div>
+        </div>
+        <div id="sync-status" style="font-size:13px;color:var(--text-sec);padding:8px 0;text-align:center"></div>
+        <button id="sync-logout-btn" class="btn btn-ghost btn-full" style="display:none;margin-top:8px">断开连接</button>
+      </div>
+    </div>
+
+    <div class="section">
       <div class="section-title">数据管理（M9）</div>
       <div class="card">
         <button class="btn btn-secondary btn-full" id="btn-export" style="margin-bottom:8px">
@@ -161,7 +184,7 @@ export function buildSettingsHTML({ profile, settings }) {
 
     <div class="section">
       <div style="text-align:center;font-size:12px;color:var(--text-mute)">
-        起起成长设置 · 数据存储在本设备，不上传任何服务器
+        起起成长设置 · 数据优先存储在本设备，配置 NAS 后自动同步
       </div>
     </div>`;
 }
@@ -174,6 +197,51 @@ export async function renderSettings() {
 
   const settings = await state.db.getSettings();
   body.innerHTML = buildSettingsHTML({ profile: state.profile, settings });
+
+  // ── NAS 数据同步配置 ─────────────────────────────────────────
+
+  function _updateSyncStatus() {
+    const base = localStorage.getItem('qiqi_api_base');
+    const jwt  = localStorage.getItem('qiqi_jwt');
+    const el   = body.querySelector('#sync-status');
+    const logoutBtn = body.querySelector('#sync-logout-btn');
+    const pinRow = body.querySelector('#pin-row');
+
+    if (!base) {
+      el.textContent = '未配置，数据仅存本设备';
+      logoutBtn.style.display = 'none';
+      pinRow.style.display = 'none';
+    } else if (!jwt) {
+      el.textContent = '已填写地址，待验证 PIN';
+      logoutBtn.style.display = 'none';
+      pinRow.style.display = '';
+    } else {
+      el.textContent = '✓ 已连接 NAS，自动同步中';
+      logoutBtn.style.display = '';
+      pinRow.style.display = '';
+    }
+  }
+
+  const savedBase = localStorage.getItem('qiqi_api_base') || '';
+  body.querySelector('#api-base-input').value = savedBase;
+  _updateSyncStatus();
+
+  body.querySelector('#api-base-input')?.addEventListener('change', e => {
+    setApiBase(e.target.value.trim());
+    _updateSyncStatus();
+  });
+
+  body.querySelector('#pin-login-btn')?.addEventListener('click', async () => {
+    const pin = body.querySelector('#pin-input').value.trim();
+    const ok = await login(pin);
+    _updateSyncStatus();
+    if (!ok) alert('PIN 码错误，请重试');
+  });
+
+  body.querySelector('#sync-logout-btn')?.addEventListener('click', () => {
+    clearAuth();
+    _updateSyncStatus();
+  });
 
   // 引导强度切换
   body.querySelector('#intensity-control')?.addEventListener('click', async e => {
@@ -250,6 +318,7 @@ export async function renderSettings() {
 
       const updated = { ...state.profile, name, birthDate, gender: editGender };
       await state.db.saveProfile(updated);
+      pushProfile(updated);  // ← sync 同步
       state.profile = updated;
 
       // 更新月龄显示
