@@ -59,7 +59,7 @@ start prototype.html
 
 当前文件：`起起成长-需求说明书-v1.8.md`（内部版本已升至 **v2.0**，2026-04-24 更新）
 
-**v2.0 新增内容**（Tab 重构 + NAS 后端 + 时光增删改，已实装，2026-04-24）：
+**v2.0 新增内容**（Tab 重构 + NAS 后端 + 时光增删改 + sync.js 集成，已验证完成，2026-04-24~28）：
 - **Tab 结构重构**：活动库 Tab 移除，适龄活动库合并入今日 Tab 推荐下方；Tab 栏 5 个 → 4 个（今日 / 成长 / 时光 / 设置）
 - **M_Moments（时光 Tab）**：新增，微信朋友圈式瀑布流，合并育儿日记 + 活动记录，支持完整增删改
   - 发：时光页右上角 + 按钮 → 日记 overlay
@@ -68,6 +68,13 @@ start prototype.html
 - **成长 Tab 精简**：移除日记/活动记录时间线，仅保留里程碑分阶段导航
 - **NAS 后端**（server/）：Bun + SQLite + Docker Compose，JWT PIN 认证，REST API（/api/health、/api/auth/pin、/api/profile、/api/records、/api/diary、/api/milestones/states）
 - **前端同步层**（js/sync.js）：push-only fire-and-forget，未配置 API 时静默跳过，支持 pushRecord/pushDiary/pushProfile/pushMilestoneState/deleteRecord/deleteDiary/pullAll
+- **sync.js 集成与验证**（2026-04-28 完成）：
+  - ✅ `js/ui/record.js`：保存记录后调用 pushRecord()，观察记录实时同步到 NAS
+  - ✅ `js/ui/diary.js`：保存日记后调用 pushDiary()，育儿日记实时同步到 NAS
+  - ✅ `js/ui/milestones.js`：标记里程碑后调用 pushMilestoneState()，里程碑达成状态实时同步到 NAS
+  - ✅ `js/ui/settings.js`：新增 NAS API 配置区块（地址 + PIN 码），编辑档案后调用 pushProfile()
+  - ✅ 浏览器端 Service Worker 缓存版本更新至 v7（强制刷新确保加载最新代码）
+  - ✅ 端到端验证：观察记录 11 条、育儿日记 2 条、里程碑达成状态 1 条，全部同步成功
 - **日记字段说明**：diaryEntries 存储 `{changes, feelings, images:[{name,dataUrl}]}`，moments.js 合并显示两段内容
 
 **v1.9 新增内容**（数据库全量完成 + PWA 修复，已实装）：
