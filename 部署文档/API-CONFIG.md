@@ -1,8 +1,11 @@
-# PWA 中文 API 配置指南
+# PWA NAS 数据同步配置指南
 
-## 问题
+## 概述
 
-PWA 需要知道你的 NAS API 地址和 PIN 码，才能实现数据同步。
+起起成长 PWA 采用**事件驱动即时同步**机制：
+- 每次用户保存观察记录、日记或标记里程碑后，立即推送到 NAS
+- IndexedDB 为主存储（离线可用），NAS SQLite 为副存储（跨设备同步）
+- 未配置 API 时静默跳过，不影响本地使用
 
 ---
 
@@ -10,231 +13,147 @@ PWA 需要知道你的 NAS API 地址和 PIN 码，才能实现数据同步。
 
 ### 1. 打开 PWA 设置
 
-在浏览器打开：`http://192.168.9.3`（或你的 NAS 地址）
+在浏览器打开 PWA（如 `http://192.168.9.3:8088`），点击底部导航"**设置**" Tab。
 
-点击底部导航栏的**设置** Tab
-
-### 2. 找到"NAS 配置"或"API 服务"
-
-在设置页寻找类似这样的表单：
+### 2. 找到"NAS 数据同步"区块
 
 ```
-┌─────────────────────────────┐
-│ NAS API 配置                 │
-├─────────────────────────────┤
-│                              │
-│ API 地址                      │
-│ [_________________________]   │
-│ 例：http://192.168.9.3/api   │
-│                              │
-│ PIN 码                        │
-│ [_________________________]   │
-│ 例：123456                    │
-│                              │
-│ [连接]  [清除配置]            │
-│                              │
-└─────────────────────────────┘
+┌─────────────────────────────────┐
+│  NAS 数据同步                    │
+├─────────────────────────────────┤
+│  API 地址                        │
+│  [http://192.168.x.x:8088    ]  │
+│                                  │
+│  PIN 码                          │
+│  [__________________________]   │
+│  [连接]                          │
+│                                  │
+│  未配置，数据仅存本设备            │
+└─────────────────────────────────┘
 ```
 
 ### 3. 填写 API 地址
 
-**本地网络（推荐）：**
-```
-http://192.168.9.3/api
-```
+**格式：** `http://{NAS地址}:{端口}`（不需要加 `/api` 后缀）
 
-**或（用 NAS 主机名）：**
-```
-http://ugnas.local/api
-```
+| 场景 | API 地址示例 |
+|------|------------|
+| 内网访问 | `http://192.168.9.3:8088` |
+| 内网穿透 | `http://192.168.22.99:8088` |
+| 外网 DDNS | `https://myqiqi.ugnas.com` |
 
-**外网访问（需配置 DDNS）：**
+### 4. 填写 PIN 码 → 点击"连接"
+
+输入 `.env` 中配置的 `ACCESS_PIN`，点击"连接"。
+
+成功后状态显示：
 ```
-https://myqiqi.ugnas.com/api
-```
-
-### 4. 填写 PIN 码
-
-输入你在 `.env` 中配置的 `ACCESS_PIN`（默认 `123456`）
-
-### 5. 点击"连接"
-
-等待 1-2 秒，应看到提示：
-```
-✅ 连接成功
-已连接到 http://192.168.9.3/api
+✓ 已连接 NAS，自动同步中
 ```
 
 ---
 
-## 验证配置是否生效
+## 验证配置生效
 
-### 方法 A：检查浏览器开发者工具
+### 方法 A：浏览器 DevTools Network 面板
 
-1. 打开 PWA
-2. 按 `F12` 打开开发者工具
-3. 进入"Network"标签页
-4. 在"今日" Tab 添加一条观察记录
-5. 应看到新的 POST 请求：
+1. 打开 F12 → Network 标签页
+2. 在今日 Tab 保存一条观察记录
+3. 应看到新请求：
    ```
-   POST http://192.168.9.3/api/records
+   POST http://192.168.9.3:8088/api/records  201 Created
    ```
-   状态码应为 `200` 或 `201`
 
-### 方法 B：检查 NAS 数据库
-
-在 NAS 上运行：
+### 方法 B：查询 NAS 数据库（API）
 
 ```bash
-docker exec qiqi-bun sqlite3 /data/sqlite.db "SELECT COUNT(*) FROM records;"
+# 获取 token
+TOKEN=$(curl -s -X POST http://192.168.9.3:8088/api/auth/pin \
+  -H "Content-Type: application/json" \
+  -d '{"pin":"your-pin"}' | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+
+# 查询各表数据量
+echo "观察记录：" && curl -s http://192.168.9.3:8088/api/records \
+  -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+echo "育儿日记：" && curl -s http://192.168.9.3:8088/api/diary \
+  -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+echo "里程碑状态：" && curl -s http://192.168.9.3:8088/api/milestones/states \
+  -H "Authorization: Bearer $TOKEN" | jq '.data | length'
 ```
 
-应显示记录数量已增加。
+---
 
-### 方法 C：检查浏览器本地存储
+## 同步的数据类型
 
-1. 打开开发者工具（F12）
-2. 进入"Application"标签页
-3. 点击"Local Storage"
-4. 应看到：
-   ```
-   qiqi_api_base = http://192.168.9.3/api
-   qiqi_jwt = eyJhbGciOiJIUzI1NiI...（JWT token）
-   ```
+| 操作 | 触发函数 | API 端点 |
+|------|---------|---------|
+| 保存观察记录 | `pushRecord()` | POST /api/records |
+| 删除观察记录 | `deleteRecord()` | DELETE /api/records/:id |
+| 保存育儿日记 | `pushDiary()` | POST /api/diary |
+| 删除育儿日记 | `deleteDiary()` | DELETE /api/diary/:id |
+| 标记里程碑达成 | `pushMilestoneState()` | PUT /api/milestones/states/:id |
+| 保存孩子档案 | `pushProfile()` | PUT /api/profile |
+
+---
+
+## 同步机制说明
+
+**事件驱动即时推送（当前实现）：**
+
+```
+用户操作 → IndexedDB 保存（同步）→ NAS API 推送（异步，< 1 秒）
+```
+
+- ✅ 实时性最好，数据即时同步
+- ✅ 网络错误时静默降级，不影响用户操作
+- ⚠️ 仅支持单向推送（本地 → NAS），跨设备恢复通过 `pullAll()` 手动触发（P1 功能）
 
 ---
 
 ## 故障排查
 
-### 连接失败：网络错误
+### 状态显示"未配置，数据仅存本设备"
 
-**可能原因：**
-- NAS API 服务未运行
-- 输入的 API 地址错误
-- 防火墙阻止
+API 地址未填写，填写后会显示 PIN 码输入框。
 
-**解决：**
+### PIN 码正确但连接失败
+
 ```bash
-# 在 NAS 上检查服务状态
-docker-compose ps
-
-# 验证 API 是否响应
-curl http://192.168.9.3/api/health
-# 应返回：{"success":true}
+# 确认 NAS 服务在运行
+curl http://192.168.9.3:8088/api/health
+# 返回 {"success":true} 说明正常
 ```
 
-### 连接失败：401 Unauthorized
+### 连接成功但数据未同步
 
-**可能原因：**
-- PIN 码输入错误
-- JWT token 过期
+1. 打开 DevTools → Console，查看是否有 `[sync] Network error` 日志
+2. 检查 Network 面板中 `/api/records` 请求的状态码
 
-**解决：**
-```bash
-# 检查 PIN 码是否正确
-grep ACCESS_PIN /mnt/nas/qiqi/.env
+### 断开连接 / 切换设备
 
-# 清除本地 token，重新连接
-# 在 PWA 设置页点击"清除配置"，再点"连接"
-```
+在设置页点击"**断开连接**"按钮，会清除 localStorage 中的 JWT token。
 
-### 记录已保存在 IndexedDB，但未同步到 NAS
-
-**可能原因：**
-- API 未配置（PWA 在 IndexedDB 保存，但不会发送到 NAS）
-- API 地址配置错误
-
-**解决：**
-1. 检查设置页是否显示"已连接"
-2. 检查浏览器开发者工具的 Network 标签是否有 `/api/records` 请求
-3. 在浏览器 Console 输入：
-   ```javascript
-   console.log(localStorage.getItem('qiqi_api_base'))
-   // 应显示：http://192.168.9.3/api
-   ```
+重新连接：再次填写 PIN 码 → 点击"连接"。
 
 ---
 
-## 高级配置
+## 多设备使用
 
-### 更改 API 地址（不重新配置）
+同一 PIN 码可在多台设备登录（JWT 有效期 7 天）。
 
-在浏览器 Console 输入：
+**在新设备上配置：**
 
-```javascript
-localStorage.setItem('qiqi_api_base', 'http://new-address/api');
-location.reload();
-```
+1. 打开 PWA → 设置 → NAS 数据同步
+2. 填写相同的 API 地址和 PIN 码
+3. 点击"连接"
+4. 此后该设备产生的新数据会自动同步到 NAS
 
-### 清除所有配置并重置
-
-```javascript
-localStorage.removeItem('qiqi_api_base');
-localStorage.removeItem('qiqi_jwt');
-location.reload();
-```
-
-### 导出 API token（用于多设备同步）
-
-```javascript
-console.log('JWT Token:');
-console.log(localStorage.getItem('qiqi_jwt'));
-```
-
-在另一台设备的 Console 输入：
-```javascript
-localStorage.setItem('qiqi_jwt', 'YOUR_JWT_TOKEN_HERE');
-location.reload();
-```
+> 跨设备全量数据恢复（pullAll）计划在 P1 阶段实现。
 
 ---
 
-## 多设备同步
+## 安全提示
 
-### 在新设备上同步数据
-
-1. **在新设备上打开 PWA：** `http://192.168.9.3`
-2. **配置 API：** 同上，输入相同的 API 地址和 PIN 码
-3. **刷新页面：** F5 或点击地址栏的刷新
-4. **检查数据：** 应显示来自 NAS 的所有历史数据
-
-### 跨 WiFi 和外网访问
-
-**在家里：**
-```
-http://192.168.9.3/api
-```
-
-**在公司或出差：**
-```
-https://myqiqi.ugnas.com/api  （配置 DDNS 后）
-```
-
-或使用 Tailscale VPN：
-```
-http://100.x.x.x/api
-```
-
----
-
-## 注意事项
-
-⚠️ **不要在公共设备上保存 JWT token**
-- 关闭浏览器时点击"清除配置"
-- 避免在网吧、医院等公共场所登录
-
-⚠️ **PIN 码安全**
-- 定期修改 `.env` 中的 `ACCESS_PIN`
-- 不要使用太简单的密码（如 1234）
-
-⚠️ **HTTPS 强烈推荐**
-- 外网访问时必须使用 HTTPS
-- 配置 DDNS 会自动启用 HTTPS 和 SSL 证书
-
----
-
-## 需要帮助？
-
-- 检查 NAS 上的日志：`docker-compose logs -f`
-- 查看 PWA 开发者工具：F12 → Console 查看错误信息
-- 详见完整部署指南：`DEPLOYMENT.md`
+- 公共设备上使用后，点击"断开连接"清除 token
+- 推荐设置复杂 PIN 码（`.env` 中的 `ACCESS_PIN`）
+- 外网访问时强烈建议启用 HTTPS（见 `HTTPS-DDNS-SETUP.md`）
