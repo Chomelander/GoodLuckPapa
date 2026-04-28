@@ -3,7 +3,7 @@
  * 策略：Cache-First — 所有资源本地化，无服务端 API，离线后完整可用
  * 升级缓存：修改 CACHE_NAME 版本号，旧缓存自动清理
  */
-const CACHE_NAME = 'qiqi-v5';
+const CACHE_NAME = 'qiqi-v6';
 
 const URLS_TO_CACHE = [
   '/',
