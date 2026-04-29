@@ -2,6 +2,7 @@
 version: 2.1
 last_updated: 2026-04-28
 changelog:
+  - v2.1 (2026-04-28): 完整文档整理，按成熟项目规范组织 docs/ 目录
   - v2.1 (2026-04-28): sync.js 集成完成，NAS 后端验证，部署文档完善
   - v2.0 (2026-04-24): Tab 重构 + M_Moments 时光页面 + NAS 后端完成
   - v1.8 (2026-04-21): 活动库/里程碑库全量完成，244 个测试通过
@@ -77,6 +78,22 @@ NAS 友好型数据同步服务，支持小白部署。
 
 ---
 
+## 📚 完整文档导航
+
+**👉 所有文档已按成熟项目规范整理到 `docs/` 目录，从这里开始：[docs/README.md](docs/README.md)**
+
+### 快速导航
+| 你是... | 从这里开始 |
+|-------|----------|
+| **👨‍👩‍👧 家长用户** | [快速开始 · 家长篇](docs/quick-start/for-parents.md) |
+| **👨‍💻 开发者** | [开发指南 · 贡献流程](docs/development/contributing.md) |
+| **🖥️ 部署者** | [部署指南 · 5 分钟快速启动](docs/deployment/quick-start.md) |
+| **📚 系统学习** | [蒙台梭利观察体系](docs/montessori-system/) |
+| **🏗️ 架构了解** | [系统架构设计](docs/architecture/system-design.md) |
+| **❓ 遇到问题** | [常见问题 FAQ](docs/reference/faq.md) |
+
+---
+
 ## 🚀 快速开始
 
 ### 仅使用前端（离线 PWA）
@@ -127,70 +144,54 @@ docker-compose up -d
 
 ---
 
-## 📁 项目结构
+## 📁 项目结构（已整理）
 
 ```
 起起教育/
-├── README.md                          ← 你在这里
-├── CLAUDE.md                          开发指南
-├── index.html                         App 实装主入口
-├── prototype.html                     视觉设计参考原型
+├── README.md                          📍 项目主入口（你在这里）
+├── CLAUDE.md                          开发规范（必读）
+├── LICENSE
+├── docker-compose.yml
+├── manifest.json
 │
-├── js/                                前端代码
+├── docs/                              📚 所有文档（按用途分类）
+│   ├── README.md                      ⭐ 文档导航主页 · 从这里开始
+│   ├── quick-start/                   🚀 快速开始（3条路径）
+│   ├── product/                       📱 产品需求（v2.1）
+│   ├── architecture/                  🏗️ 系统架构
+│   ├── guides/                        📖 学习和使用指南
+│   ├── deployment/                    🚀 部署和运维
+│   ├── development/                   🛠️ 开发指南
+│   ├── reference/                     📋 参考资料（术语表、FAQ、版本历史）
+│   ├── montessori-system/             🎓 蒙台梭利观察体系
+│   └── archives/                      📦 历史和归档
+│
+├── js/                                💻 前端代码
 │   ├── db.js                         IndexedDB 8 个 store 封装
 │   ├── app.js                        应用初始化 + 事件总线
 │   ├── sync.js                       ⭐ NAS 同步层（push-only）
 │   ├── ui/                           各模块 UI 代码
-│   │   ├── today.js                 今日 Tab
-│   │   ├── growth.js                成长 Tab
-│   │   ├── moments.js               时光 Tab（日记+活动+里程碑）
-│   │   ├── record.js                记录编辑/新增
-│   │   ├── diary.js                 日记编辑
-│   │   ├── milestones.js            里程碑页面
-│   │   ├── settings.js              设置页（含 API 配置）
-│   │   └── ...
-│   ├── data/                         数据文件
-│   │   ├── activities-complete.js   ⭐ 143 条活动库
-│   │   ├── milestones.js            ⭐ 216 条里程碑库
-│   │   └── ...
+│   ├── data/                         活动库（143 条）+ 里程碑库（216 条）
 │   └── lib/                          辅助库
 │
 ├── css/                               样式表
-│   └── app.css                       主样式（含日记时间线、override）
-│
 ├── server/                            ⭐ 后端服务（Bun + SQLite）
 │   ├── src/
-│   │   ├── index.ts                 REST API 主文件
-│   │   └── db.ts                    SQLite 初始化
-│   ├── migrations/                  数据库版本管理
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   └── package.json
+│   ├── migrations/
+│   └── Dockerfile
 │
-├── 分类方案/                          蒙台梭利观察体系文档
-│   ├── README.md                     （详见此文件）
-│   ├── 00_体系说明.md
-│   ├── 01_通用观察评估准则.md
-│   ├── 02_核心框架与模板.md          ⭐ A-H 八模块定义
-│   ├── 03_年龄段索引.md
-│   ├── 04_示例活动集_0-1岁.md        ⭐ 维度覆盖矩阵
-│   ├── 04_示例活动_0-1岁.md          ⭐ 25 张活动卡详细版
-│   ├── 05_示例活动_3-4岁.md
-│   ├── 06_阶段汇总评估框架.md
-│   └── 07_新手SOP流程指引.md         ⭐ 7 步心跳 + 决策树
+├── tests/                             🧪 单元测试（244/244 通过）
+├── .planning/                         GSD 项目规划
+├── memory/                            项目内存和笔记
 │
-├── 部署文档/                          部署与运维指南
-│   ├── QUICK-START.md                5 分钟快速启动
-│   ├── DEPLOYMENT.md                 完整部署指南
-│   ├── API-CONFIG.md                 API 配置详解
-│   ├── HTTPS-DDNS-SETUP.md           外网访问配置
-│   └── GIT-WORKFLOW.md               版本管理工作流
+│ [已归档的目录]
+├── 分类方案/                          → docs/montessori-system/
+├── 部署文档/                          → docs/deployment/
 │
-├── tests/                             测试用例（244/244 通过）
-├── docs/                              其他文档
-├── manifest.json                      PWA 清单
-└── docker-compose.yml                 一键启动配置
+└── prototype.html                    视觉设计参考（非正式代码）
 ```
+
+**👉 详细的文件结构说明见：[docs/reference/file-structure.md](docs/reference/file-structure.md)**
 
 ---
 
