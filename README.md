@@ -25,7 +25,7 @@ changelog:
 - **执行层**：7 步心跳 + 周月复盘 + 新手 SOP
 - **应用层**：0-6 岁按月龄分阶段的活动示例（143 条完整活动，0-72 月）
 
-详见 `分类方案/README.md`
+详见 `docs/montessori-system/README.md`
 
 ### 📱 起起成长 App（前端原型 + 实装代码）
 PWA 应用，帮助父母数字化记录、查看孩子的成长过程。
@@ -85,12 +85,12 @@ NAS 友好型数据同步服务，支持小白部署。
 ### 快速导航
 | 你是... | 从这里开始 |
 |-------|----------|
-| **👨‍👩‍👧 家长用户** | [快速开始 · 家长篇](docs/quick-start/for-parents.md) |
-| **👨‍💻 开发者** | [开发指南 · 贡献流程](docs/development/contributing.md) |
-| **🖥️ 部署者** | [部署指南 · 5 分钟快速启动](docs/deployment/quick-start.md) |
-| **📚 系统学习** | [蒙台梭利观察体系](docs/montessori-system/) |
-| **🏗️ 架构了解** | [系统架构设计](docs/architecture/system-design.md) |
-| **❓ 遇到问题** | [常见问题 FAQ](docs/reference/faq.md) |
+| **👨‍👩‍👧 家长用户** | [docs/montessori-system/07_新手SOP流程指引.md](docs/montessori-system/07_新手SOP流程指引.md) |
+| **👨‍💻 开发者** | [CLAUDE.md](CLAUDE.md) — 开发规范和文件结构 |
+| **🖥️ 部署者** | [docs/deployment/QUICK-START.md](docs/deployment/QUICK-START.md) — 5 分钟快速启动 |
+| **📚 系统学习** | [docs/montessori-system/](docs/montessori-system/) — 蒙台梭利观察体系 |
+| **🏗️ 架构了解** | [docs/architecture/README.md](docs/architecture/README.md) |
+| **❓ 遇到问题** | [docs/reference/project-navigation-guide.md](docs/reference/project-navigation-guide.md) |
 
 ---
 
@@ -127,7 +127,7 @@ docker-compose up -d
 # PIN 码：任意 4 位数字（自定义）
 ```
 
-详见 `部署文档/QUICK-START.md`
+详见 `docs/deployment/QUICK-START.md`
 
 #### 配置 API（App 内）
 
@@ -138,9 +138,9 @@ docker-compose up -d
 5. 之后每次记录、日记、里程碑都会自动同步到后端
 
 更多配置方案见：
-- `部署文档/DEPLOYMENT.md` — 完整部署指南
-- `部署文档/API-CONFIG.md` — API 配置详解
-- `部署文档/HTTPS-DDNS-SETUP.md` — 外网访问配置
+- `docs/deployment/DEPLOYMENT.md` — 完整部署指南
+- `docs/deployment/API-CONFIG.md` — API 配置详解
+- `docs/deployment/HTTPS-DDNS-SETUP.md` — 外网访问配置
 
 ---
 
@@ -191,7 +191,7 @@ docker-compose up -d
 └── prototype.html                    视觉设计参考（非正式代码）
 ```
 
-**👉 详细的文件结构说明见：[docs/reference/file-structure.md](docs/reference/file-structure.md)**
+**👉 详细的文件结构说明见：[CLAUDE.md](CLAUDE.md)**
 
 ---
 
@@ -296,10 +296,10 @@ npm test
 → 打开 `index.html`，按照 App 内引导完成档案建立
 
 ### 我想理解蒙台梭利观察体系
-→ 从 `分类方案/README.md` 的推荐路径 A（小白快速上手）开始
+→ 从 `docs/montessori-system/README.md` 的推荐路径 A（小白快速上手）开始
 
 ### 我想部署后端服务
-→ 按照 `部署文档/QUICK-START.md` 运行 Docker Compose
+→ 按照 `docs/deployment/QUICK-START.md` 运行 Docker Compose
 
 ### 我想为项目贡献代码
 → 阅读 `CLAUDE.md`，了解开发规范和技能分工
@@ -335,7 +335,7 @@ npm test
 - **文档问题** → 查阅 `CLAUDE.md` 开发指南
 - **功能 Bug** → 提交 Issue（含重现步骤）
 - **功能建议** → 讨论部分见 `.planning/`
-- **部署问题** → 参考 `部署文档/` 相关文件或 GIT-WORKFLOW.md
+- **部署问题** → 参考 `docs/deployment/` 相关文件
 
 ---
 

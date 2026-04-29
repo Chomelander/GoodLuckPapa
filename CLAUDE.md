@@ -6,26 +6,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 本仓库是「起起教育」项目的工作目录，包含两个并行内容：
 
-1. **蒙台梭利家庭观察体系**（`分类方案/`）：面向家长的育儿观察工具体系，纯 Markdown 文档
-2. **起起成长 App**（PRD + 原型）：AI 辅助育儿系统的产品文档与前端原型
+1. **蒙台梭利家庭观察体系**（`docs/montessori-system/`）：面向家长的育儿观察工具体系，纯 Markdown 文档
+2. **起起成长 App**（前端 PWA + NAS 后端）：AI 辅助育儿系统的实装代码
 
-## 运行原型
-
-原型为单文件纯前端，无需构建：
+## 运行应用
 
 ```bash
-# 直接用浏览器打开
-start prototype.html
-```
+# 实装应用（IndexedDB + PWA）
+npx serve . --listen 3000
+# 访问 http://localhost:3000/index.html
 
-文件自包含所有 CSS 和 JavaScript，无外部依赖。
+# 视觉参考原型（不可修改）
+start prototype.html
+
+# 后端服务（可选，数据同步）
+cd server && docker-compose up -d
+```
 
 ## 文档体系结构
 
-### 分类方案（蒙台梭利观察体系）
+### 蒙台梭利观察体系（docs/montessori-system/）
 
 ```
-分类方案/
+docs/montessori-system/
 ├── 00_体系说明.md          理念层：为什么做、给谁用、6 条原则
 ├── 01_通用观察评估准则.md   伦理层：成人角色、底线
 ├── 02_核心框架与模板.md    ⭐ 引擎层：所有活动共用的模板与规则（A-H 八模块）
@@ -57,7 +60,7 @@ start prototype.html
 
 ### 需求说明书（起起成长 App 主文档）
 
-当前文件：`起起成长-需求说明书-v1.8.md`（内部版本已升至 **v2.0**，2026-04-24 更新）
+当前文件：`docs/product/requirements-v2.1.md`（**v2.1**，2026-04-28 最终状态）
 
 **v2.0 新增内容**（Tab 重构 + NAS 后端 + 时光增删改 + sync.js 集成，已验证完成，2026-04-24~28）：
 - **Tab 结构重构**：活动库 Tab 移除，适龄活动库合并入今日 Tab 推荐下方；Tab 栏 5 个 → 4 个（今日 / 成长 / 时光 / 设置）
@@ -101,7 +104,7 @@ start prototype.html
 - M4.5：正向会话结束卡片（记录后展示「本次观察的意义」反馈，自然结束）
 - M8.5：月度复盘（蒙氏 10 维度评估 + 环境调整建议 + 优势发现）
 
-该文档是双轨融合（分类方案 + App 设计）的产物，涵盖：数据结构、MVP 功能模块（M1-M9 + M_GuideIntensity + M_ObsGuide + M_Onboarding + M_MilestoneConfirm + M_ReEntry + M_Diary + M_RecordEdit + M_CustomActivity + M_RecordManage + **M_Moments**）、页面结构、技术规范。**开发以此文档为准，PRD 仅作历史参考。**
+该文档是双轨融合（蒙台梭利体系 + App 设计）的产物，涵盖：数据结构、MVP 功能模块（M1-M9 + M_GuideIntensity + M_ObsGuide + M_Onboarding + M_MilestoneConfirm + M_ReEntry + M_Diary + M_RecordEdit + M_CustomActivity + M_RecordManage + M_Moments）、页面结构、技术规范。**开发以此文档为准，docs/product/prd.md 仅作历史参考。**
 
 ### PRD（起起成长 App）
 
@@ -122,9 +125,10 @@ CSS 变量集中在 `:root`（颜色、圆角、阴影）；页面切换使用 `
 ## MVP 开发范围
 
 ### 当前进度
-- **状态**：v1.8 已实装，244 测试全通，浏览器 Golden Path 验收完成
+- **状态**：v2.1 已实装，sync.js 集成完成，端到端验证通过（2026-04-28）
 - **活动库**：**0-72月（0-6岁）143 条完整数据**，`js/data/activities-complete.js`（2026-04-16 完成，Golden Path 14/14 通过）
 - **里程碑库**：**0-72月 216 条完整**（10维度，observeTip/linkedMilestones 100%，`js/data/milestones.js`，2026-04-17）
+- **后端**：NAS Bun + SQLite + Docker Compose，JWT PIN 认证，REST API，2026-04-24 实装
 - **数据文件**：`js/data/activities-complete.js`（活动主文件）+ `js/data/milestones.js`（里程碑主文件）
 
 ### 包含的功能模块（MVP P0）
@@ -151,7 +155,8 @@ CSS 变量集中在 `:root`（颜色、圆角、阴影）；页面切换使用 `
 | **M_Diary** | **育儿日记**（v1.7新，今日+按钮，成长Tab三级折叠时间线） |
 | **M_RecordEdit** | **今日记录编辑/删除**（v1.7新，inline confirm） |
 | **M_CustomActivity** | **自定义活动库管理**（v1.7新，设置页增查改删） |
-| **M_RecordManage** | **历史记录管理**（v1.7新，设置页分页查删） |
+| **M_RecordManage** | **历史记录管理**（v1.7新，迁移至时光 Tab） |
+| **M_Moments** | **时光 Tab**（v2.0新，瀑布流，日记+活动记录合并，支持完整增删改） |
 
 ### 延后 P1 的功能
 - Claude API 接入 + AI 周方案生成
@@ -201,57 +206,71 @@ DB_VERSION: **2**（v1.7 升级，新增 Store 7/8）
 ### 核心规范文档
 | 文件 | 版本 | 用途 |
 |------|------|------|
-| `起起成长-需求说明书-v1.7.md` | **v1.7** | **开发主文档**，详细功能规范 + 数据结构 + 技术栈 |
-| `起起成长-需求说明书-v1.5.md` | v1.6 | 历史归档（v1.7 的基础版本） |
-| `分类方案/02_核心框架与模板.md` | 参考 | A-H 八模块定义，所有活动共用模板 |
-| `分类方案/04_示例活动集_0-1岁.md` | 参考 | 活动框架索引，维度覆盖矩阵 |
-| `分类方案/04_示例活动_0-1岁.md` | 参考 | 25张活动卡详细内容 |
-| `分类方案/07_新手SOP流程指引.md` | 参考 | 7步心跳 + 周复盘5问 |
+| `docs/product/requirements-v2.1.md` | **v2.1** | **开发主文档**，详细功能规范 + 数据结构 + 技术栈 |
+| `docs/product/prd.md` | v0.4 | 历史归档（已被需求说明书取代） |
+| `docs/archives/old-versions/起起成长-需求说明书-v1.5.md` | v1.5 | 历史归档 |
+| `docs/montessori-system/02_核心框架与模板.md` | 参考 | A-H 八模块定义，所有活动共用模板 |
+| `docs/montessori-system/04_示例活动集_0-1岁.md` | 参考 | 活动框架索引，维度覆盖矩阵 |
+| `docs/montessori-system/04_示例活动_0-1岁.md` | 参考 | 25张活动卡详细内容 |
+| `docs/montessori-system/07_新手SOP流程指引.md` | 参考 | 7步心跳 + 周复盘5问 |
 
 ### 数据文件（活动与里程碑）
 | 文件 | 内容 | 状态 |
 |------|------|------|
 | `js/data/activities-complete.js` | **0-72月 143条完整活动**（2026-04-16，Golden Path 14/14 通过） | ✅ **主文件** |
-| `js/data/activities.js` | 旧版 0-6月 7条 | ⚠️ DEPRECATED，勿引用 |
+| `js/data/activities.js` | 旧版 0-6月 7条 | ⚠️ DEPRECATED — custom-activity.js/settings.js 仍错误引用，待修正 |
 | `js/data/milestones.js` | **0-72月 216条完整里程碑**（10维度，observeTip/linkedMilestones 100%，2026-04-17） | ✅ **主文件** |
-| `milestone-sample-phase1.js` | 9条示范里程碑（历史归档） | ⚠️ 已被 milestones.js 取代 |
-| `activity-sample-phase1.js` | 3条示范活动（历史归档） | 参考 |
-| `PHASE2-COMPLETION-REPORT.md` | Phase 2 完成报告 | 参考 |
-| `PHASE1-REVIEW-CHECKLIST.md` | Phase 1 评审清单 | 参考 |
 
-### 前端原型与实装代码
+### 前端实装代码
 | 文件/目录 | 用途 |
 |------|------|
-| `prototype.html` | 视觉参考原型，新起代码开发（不直接修改） |
-| `index.html` | 实装主入口（含 overlay 骨架：diary-overlay / custom-act-overlay） |
-| `js/db.js` | IndexedDB 封装（DB_VERSION 2，8个store，含 diary/customActivity CRUD） |
+| `prototype.html` | 视觉参考原型（不直接修改，仅作设计参考） |
+| `index.html` | **实装主入口**（PWA，含全部 overlay 骨架） |
+| `js/db.js` | IndexedDB 封装（DB_VERSION 2，8个store） |
 | `js/app.js` | 应用入口（初始化 + 事件总线 + customActs 合并） |
-| `js/ui/diary.js` | 育儿日记模块（M_Diary，图片压缩 + 时间线渲染） |
-| `js/ui/custom-activity.js` | 自定义活动 overlay（M_CustomActivity） |
+| `js/sync.js` | NAS 同步层（push-only fire-and-forget，API 未配置时静默跳过） |
+| `js/ui/moments.js` | 时光 Tab（M_Moments，瀑布流，日记+活动记录合并） |
+| `js/ui/diary.js` | 育儿日记模块（M_Diary，图片压缩 + 同步 pushDiary） |
 | `js/ui/today.js` | 今日 Tab（含记录编辑/删除，M_RecordEdit） |
-| `js/ui/settings.js` | 设置页（含历史记录管理 + 自定义活动管理） |
-| `css/app.css` | 样式（含日记时间线、缩略图、inline-confirm 样式） |
+| `js/ui/milestones.js` | 里程碑 Tab（含 pushMilestoneState 同步） |
+| `js/ui/record.js` | 观察记录（含 pushRecord 同步） |
+| `js/ui/settings.js` | 设置页（NAS API 配置区块 + pushProfile） |
+| `css/app.css` | 样式（含时光瀑布流、日记缩略图、inline-confirm 样式） |
+
+### 后端服务（server/）
+| 文件/目录 | 用途 |
+|------|------|
+| `server/src/index.ts` | Bun HTTP 服务主入口，REST API 路由 |
+| `server/migrations/` | SQLite 建表脚本 |
+| `docker-compose.yml` | Docker Compose（Nginx + API 服务一键启动） |
+| `nginx.conf` | Nginx 反向代理配置 |
+| `docs/deployment/QUICK-START.md` | 5 分钟部署指南 |
+| `docs/deployment/DEPLOYMENT.md` | 完整部署参考 |
+| `docs/deployment/API-CONFIG.md` | API 配置说明 |
 
 ## 开发前检查清单
 
 启动开发时，确认以下内容：
 
-- [x] 需求说明书 v1.8 已实装（244 测试全通，Golden Path 验收通过）
+- [x] 需求说明书 v2.1 已实装（sync.js 集成 + 端到端验证通过，2026-04-28）
 - [x] 活动库完整（**143条 0-72月**，`js/data/activities-complete.js`，14/14 验收通过，2026-04-16）
 - [x] 里程碑库完整（**216条 0-72月**，observeTip/linkedMilestones 100%，`js/data/milestones.js`，2026-04-17）
 - [x] IndexedDB schema 包含全部 8 个 store（DB_VERSION 2）
-- [x] 原型 CSS 变量完整迁移
 - [x] 轻/中/重三模式切换逻辑已实现（guideIntensity 全局状态）
-- [x] 育儿日记 overlay + 时间线已实装（Store 7 diaryEntries）
+- [x] M_Moments 时光 Tab 已实装（瀑布流，日记+活动记录合并，增删改，`js/ui/moments.js`）
+- [x] 育儿日记 overlay 已实装（Store 7 diaryEntries，pushDiary 同步）
 - [x] 自定义活动 overlay 已实装（Store 8 customActivities）
 - [x] 今日记录编辑/删除已实装（updateRecord / deleteRecord）
-- [x] 设置页历史记录管理 + 自定义活动管理已实装
+- [x] NAS 同步层已集成（sync.js，record/diary/milestones/settings 全部接入）
+- [x] 设置页 NAS API 配置区块已实装（地址 + PIN 码 + 状态显示）
+- [x] Service Worker 缓存版本 qiqi-v8（补入 moments.js + sync.js，2026-04-29）
+- [ ] `js/data/activities.js` 遗留引用待修正（custom-activity.js / settings.js 应改为 activities-complete.js）
 
 ## 写作规范（Markdown 文档）
 
 - 所有 `.md` 文件顶部有 YAML frontmatter，包含 `version`、`last_updated`、`changelog`
 - 版本号：小修末位 +1（v1.0 → v1.1），结构性变更中位 +1（v1.1 → v2.0）
-- 活动卡采用统一模板（`02_核心框架与模板.md` A 部分），修改活动内容需保持模板字段完整
+- 活动卡采用统一模板（`docs/montessori-system/02_核心框架与模板.md` A 部分），修改活动内容需保持模板字段完整
 - 记录表字段固定 11 项（02-B），不得随意增删
 
 ## 特殊说明
@@ -260,3 +279,16 @@ DB_VERSION: **2**（v1.7 升级，新增 Store 7/8）
 - **小白父母导向**：系统设计最终目标是让新手父母也能"学会观察"，而不仅是记录。UI 复杂度通过「轻/中/重」模式在原型层面解决。
 - **数据库已全量完成**：活动库 143条（0-72月）+ 里程碑库 216条（0-72月，10维度），P0 阶段数据基础完整，P1 专注 AI 功能引入。
 - **无 AI 约束**：MVP 不包含任何 AI 调用，所有推荐和识别均为规则驱动（F规则、G规则）。P1 才引入 Claude API。
+
+## Memory 更新规则
+
+`memory/` 只记录「不在代码、不在 `.planning/` 里的东西」：
+
+| 触发事件 | 更新哪个文件 |
+|---------|------------|
+| 做出影响后续开发的新决策 | `lin_decisions.md` |
+| 发现未记录的 Bug 或已知坑 | `known_issues.md` |
+| 部署方式或 API 配置发生变化 | `deployment.md` |
+| 修改任何静态文件（JS/CSS/HTML）| `service-worker.js` 升级 CACHE_NAME，更新 `known_issues.md` 中的版本记录 |
+
+**不要记录**：版本号、测试数量、文件路径、功能状态（看代码/git log/.planning/STATE.md）

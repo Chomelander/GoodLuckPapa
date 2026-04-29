@@ -3,7 +3,7 @@
  * 功能：新增/编辑自定义活动（保存到 customActivities store，合并到 state.activities）
  */
 import { state } from '../app.js';
-import { ACTIVITIES } from '../data/activities.js';
+import { ACTIVITIES } from '../data/activities-complete.js';
 
 const DOMAIN_OPTIONS = [
   { value: 'sensorial',       label: '感官' },

@@ -14,9 +14,9 @@ description: 项目文档导航主页 - 快速定位各类文档
 
 **初次接触项目？从这里开始**
 
-- [📱 App 用户 · 快速开始](quick-start/for-parents.md) — 家长快速上手
-- [👨‍💻 开发者 · 快速开始](quick-start/for-developers.md) — 开发环境配置和第一个 PR
-- [🖥️ 部署者 · 快速开始](quick-start/for-deployment.md) — 5 分钟启动后端服务
+- [📱 App 用户] → 打开 `index.html`，按 App 内引导操作；或读 `montessori-system/07_新手SOP流程指引.md`
+- [👨‍💻 开发者] → 读根目录 `CLAUDE.md`（开发规范、文件结构、checklist）
+- [🖥️ 部署者] → 读 `deployment/QUICK-START.md`（5 分钟启动后端服务）
 
 ---
 
@@ -27,9 +27,8 @@ description: 项目文档导航主页 - 快速定位各类文档
 
 | 文件 | 用途 |
 |-----|------|
-| `requirements-v2.1.md` | ✅ 需求说明书 v2.1（当前版本） |
-| `prd.md` | 📋 产品需求文档（参考） |
-| `features.md` | 📝 功能模块清单和说明 |
+| `requirements-v2.1.md` | ✅ 需求说明书 v2.1（当前版本，**开发以此为准**） |
+| `prd.md` | 📋 产品需求文档（参考，已被需求说明书取代） |
 
 👉 **推荐**：先读 `requirements-v2.1.md`，了解产品现状
 
@@ -40,13 +39,14 @@ description: 项目文档导航主页 - 快速定位各类文档
 
 | 文件 | 用途 |
 |-----|------|
-| `system-design.md` | 🎯 系统整体设计 |
-| `frontend-architecture.md` | 🖥️ 前端架构（IndexedDB、Service Worker、UI 模块） |
-| `backend-architecture.md` | 🔧 后端架构（Bun、SQLite、REST API） |
-| `database-schema.md` | 📊 数据库 schema（8 个 store + API tables） |
-| `api-specification.md` | 🔌 REST API 完整规范 |
+| `README.md` | ✅ 架构概览（架构图 + 模块说明）|
+| ~~`system-design.md`~~ | 📝 计划中 |
+| ~~`frontend-architecture.md`~~ | 📝 计划中 |
+| ~~`backend-architecture.md`~~ | 📝 计划中 |
+| ~~`database-schema.md`~~ | 📝 计划中 |
+| ~~`api-specification.md`~~ | 📝 计划中（当前参考 `server/src/index.ts`） |
 
-👉 **推荐**：开发前先读 `system-design.md`
+👉 **推荐**：开发前先读 `architecture/README.md`，完整 schema 查看 `js/db.js` 和 `server/src/index.ts`
 
 ---
 
@@ -55,13 +55,13 @@ description: 项目文档导航主页 - 快速定位各类文档
 
 | 文件 | 用途 |
 |-----|------|
-| `app-usage-guide.md` | 📱 App 功能使用指南 |
-| `montessori-quick-guide.md` | 🎓 蒙台梭利观察体系快速入门 |
-| `learning-paths.md` | 🗺️ 四大学习路径详解 |
+| ~~`app-usage-guide.md`~~ | 📝 计划中 |
+| ~~`montessori-quick-guide.md`~~ | 📝 计划中 |
+| ~~`learning-paths.md`~~ | 📝 计划中 |
 
 还有完整的蒙台梭利体系文档，见下面的 [蒙台梭利观察体系](#蒙台梭利观察体系)
 
-👉 **推荐**：家长从 `montessori-quick-guide.md` 开始
+👉 **推荐**：家长直接从 `montessori-system/07_新手SOP流程指引.md` 开始
 
 ---
 
@@ -87,15 +87,15 @@ description: 项目文档导航主页 - 快速定位各类文档
 
 | 文件 | 用途 |
 |-----|------|
-| `setup.md` | 🔧 开发环境配置 |
-| `coding-standards.md` | 📝 代码规范和风格 |
-| `testing-guide.md` | 🧪 单元测试、集成测试、端到端测试 |
-| `git-workflow.md` | 🔀 Git 工作流和提交规范 |
-| `contributing.md` | 🤝 贡献指南（如何提 PR） |
+| ~~`setup.md`~~ | 📝 计划中 |
+| ~~`coding-standards.md`~~ | 📝 计划中 |
+| ~~`testing-guide.md`~~ | 📝 计划中 |
+| ~~`git-workflow.md`~~ | 📝 计划中（当前参考 `docs/deployment/GIT-WORKFLOW.md`） |
+| ~~`contributing.md`~~ | 📝 计划中 |
 
-还有项目级的开发规范，见根目录的 `CLAUDE.md`
+**现有开发规范**：根目录的 `CLAUDE.md`（最权威）
 
-👉 **推荐**：新贡献者从 `contributing.md` 开始
+👉 **推荐**：开发者直接读根目录 `CLAUDE.md`
 
 ---
 
@@ -104,14 +104,15 @@ description: 项目文档导航主页 - 快速定位各类文档
 
 | 文件 | 用途 |
 |-----|------|
-| `glossary.md` | 📚 术语表（H 编号体系、蒙氏10维度等） |
-| `file-structure.md` | 🗂️ 完整项目文件结构说明 |
-| `version-history.md` | 📅 版本历史和更新日志 |
-| `faq.md` | ❓ 常见问题 |
-| `design-decisions.md` | 🎯 关键设计决策和 ADR |
-| `project-navigation-guide.md` | 🧭 详细的项目导航速查表 |
+| `project-navigation-guide.md` | ✅ 详细的项目导航速查表 |
+| `M-GUIDINTENSITY-MATRIX.md` | ✅ 引导强度（轻/中/重）矩阵参考 |
+| ~~`glossary.md`~~ | 📝 计划中（术语表：H编号、蒙氏10维度等） |
+| ~~`file-structure.md`~~ | 📝 计划中（完整文件结构说明见 `CLAUDE.md`） |
+| ~~`version-history.md`~~ | 📝 计划中（版本历史见各需求文档 changelog） |
+| ~~`faq.md`~~ | 📝 计划中 |
+| ~~`design-decisions.md`~~ | 📝 计划中（历史设计见 `archives/design-archives/`） |
 
-👉 **推荐**：遇到问题时查看 `faq.md`
+👉 **推荐**：遇到问题时查看 `project-navigation-guide.md`
 
 ---
 
@@ -204,9 +205,9 @@ description: 项目文档导航主页 - 快速定位各类文档
 - **[CLAUDE.md](../CLAUDE.md)** — 开发规范和技能分工（必读）
 
 ### 源代码目录
-- **src/frontend/** — 前端代码（HTML / CSS / JS）
-- **src/backend/** — 后端代码（Bun / TypeScript）
-- **tests/** — 单元测试（244 个）
+- **`index.html` / `js/` / `css/`** — 前端代码（HTML / CSS / Vanilla JS）
+- **`server/`** — 后端代码（Bun / TypeScript / SQLite）
+- **`tests/`** — 单元测试（244 个）
 
 ### 项目管理
 - **.planning/** — GSD 项目规划和阶段文档

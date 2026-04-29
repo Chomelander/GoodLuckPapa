@@ -3,7 +3,7 @@
  * 确保 ACTIVITIES 和 MILESTONES 的字段与 UI 期望一致
  */
 import { describe, it, expect } from 'vitest';
-import { ACTIVITIES } from '../js/data/activities.js';
+import { ACTIVITIES } from '../js/data/activities-complete.js';
 import { MILESTONES } from '../js/data/milestones.js';
 
 describe('ACTIVITIES 数据形状', () => {
@@ -24,7 +24,7 @@ describe('ACTIVITIES 数据形状', () => {
   });
 
   it('每条活动 domain 为全名（非缩写）', () => {
-    const VALID_DOMAINS = ['language', 'sensorial', 'movement', 'practical_life', 'emotional_social'];
+    const VALID_DOMAINS = ['language', 'sensorial', 'movement', 'practical_life', 'emotional_social', 'math', 'culture'];
     for (const a of ACTIVITIES) {
       expect(VALID_DOMAINS, `${a.id}.domain="${a.domain}" 不是有效全名`).toContain(a.domain);
     }
@@ -65,7 +65,7 @@ describe('MILESTONES 数据形状', () => {
   });
 
   it('每条里程碑 domain 为全名', () => {
-    const VALID_DOMAINS = ['cognitive', 'motor', 'language', 'emotional_social', 'self_care'];
+    const VALID_DOMAINS = ['cognitive', 'motor', 'language', 'emotional_social', 'self_care', 'social', 'math', 'practical', 'sensory'];
     for (const m of MILESTONES) {
       expect(VALID_DOMAINS, `${m.id}.domain="${m.domain}" 不是有效全名`).toContain(m.domain);
     }

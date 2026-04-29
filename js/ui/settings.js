@@ -431,7 +431,7 @@ export async function renderSettings() {
     } else if (action === 'ca-confirm') {
       await state.db.deleteCustomActivity(id);
       // 同步 state.activities
-      const { ACTIVITIES } = await import('../data/activities.js');
+      const { ACTIVITIES } = await import('../data/activities-complete.js');
       const remaining = await state.db.getCustomActivities();
       state.activities = [...ACTIVITIES, ...remaining];
       document.getElementById(`ca-card-${id}`)?.remove();
