@@ -209,27 +209,19 @@ export async function renderSettings() {
     const el   = body.querySelector('#sync-status');
     const logoutBtn = body.querySelector('#sync-logout-btn');
     const pinRow = body.querySelector('#pin-row');
-    const versionEl = body.querySelector('#sync-version');
-    const versionTextEl = body.querySelector('#sync-version-text');
 
     if (!base) {
       el.textContent = '未配置，数据仅存本设备';
       logoutBtn.style.display = 'none';
       pinRow.style.display = 'none';
-      versionEl.style.display = 'none';
     } else if (!jwt) {
       el.textContent = '已填写地址，待验证 PIN';
       logoutBtn.style.display = 'none';
       pinRow.style.display = '';
-      versionEl.style.display = 'none';
     } else {
       el.textContent = '✓ 已连接 NAS，自动同步中';
       logoutBtn.style.display = '';
       pinRow.style.display = '';
-      versionEl.style.display = '';
-      // 显示最后同步版本
-      const syncVersion = localStorage.getItem('qiqi_sync_version') || '(首次同步)';
-      versionTextEl.textContent = syncVersion;
     }
   }
 
