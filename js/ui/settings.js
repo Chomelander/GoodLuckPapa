@@ -155,6 +155,9 @@ export function buildSettingsHTML({ profile, settings }) {
           </div>
         </div>
         <div id="sync-status" style="font-size:13px;color:var(--text-sec);padding:8px 0;text-align:center"></div>
+        <div id="sync-version" style="font-size:12px;color:var(--text-mute);padding:8px 0;text-align:center;display:none">
+          最后同步版本：<span id="sync-version-text">--</span>
+        </div>
         <button id="sync-logout-btn" class="btn btn-ghost btn-full" style="display:none;margin-top:8px">断开连接</button>
       </div>
     </div>
@@ -184,7 +187,8 @@ export function buildSettingsHTML({ profile, settings }) {
 
     <div class="section">
       <div style="text-align:center;font-size:12px;color:var(--text-mute)">
-        起起成长设置 · 数据优先存储在本设备，配置 NAS 后自动同步
+        起起成长设置 · 数据优先存储在本设备，配置 NAS 后自动同步<br/>
+        <span style="font-size:11px;margin-top:4px;display:block">版本号在每次数据更新后自动生成</span>
       </div>
     </div>`;
 }
@@ -206,19 +210,27 @@ export async function renderSettings() {
     const el   = body.querySelector('#sync-status');
     const logoutBtn = body.querySelector('#sync-logout-btn');
     const pinRow = body.querySelector('#pin-row');
+    const versionEl = body.querySelector('#sync-version');
+    const versionTextEl = body.querySelector('#sync-version-text');
 
     if (!base) {
       el.textContent = '未配置，数据仅存本设备';
       logoutBtn.style.display = 'none';
       pinRow.style.display = 'none';
+      versionEl.style.display = 'none';
     } else if (!jwt) {
       el.textContent = '已填写地址，待验证 PIN';
       logoutBtn.style.display = 'none';
       pinRow.style.display = '';
+      versionEl.style.display = 'none';
     } else {
       el.textContent = '✓ 已连接 NAS，自动同步中';
       logoutBtn.style.display = '';
       pinRow.style.display = '';
+      versionEl.style.display = '';
+      // 显示最后同步版本
+      const syncVersion = localStorage.getItem('qiqi_sync_version') || '(首次同步)';
+      versionTextEl.textContent = syncVersion;
     }
   }
 

@@ -43,6 +43,12 @@ export function clearAuth() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+/** 更新最后同步版本号（每次同步后记录时间戳） */
+function _updateSyncVersion() {
+  const now = new Date().toLocaleString('zh-CN');
+  localStorage.setItem('qiqi_sync_version', now);
+}
+
 /**
  * 通用 fetch 封装
  * - 未配置地址 → 返回 null（静默）
@@ -117,6 +123,7 @@ export function pushRecord(record) {
       note:        record.note       || null,
     }),
   });
+  _updateSyncVersion();
 }
 
 /**
@@ -125,6 +132,7 @@ export function pushRecord(record) {
  */
 export function deleteRecord(id) {
   _apiFetch(`/api/records/${id}`, { method: 'DELETE' });
+  _updateSyncVersion();
 }
 
 /**
@@ -140,6 +148,7 @@ export function pushProfile(profile) {
       gender:     profile.gender     || null,
     }),
   });
+  _updateSyncVersion();
 }
 
 /**
@@ -154,6 +163,7 @@ export function pushDiary(entry) {
       image_urls: entry.imageUrls || [],
     }),
   });
+  _updateSyncVersion();
 }
 
 /**
@@ -162,6 +172,7 @@ export function pushDiary(entry) {
  */
 export function deleteDiary(id) {
   _apiFetch(`/api/diary/${id}`, { method: 'DELETE' });
+  _updateSyncVersion();
 }
 
 /**
@@ -174,6 +185,7 @@ export function pushMilestoneState(milestoneId, milestoneState) {
     method: 'PUT',
     body: JSON.stringify({ status: milestoneState.status }),
   });
+  _updateSyncVersion();
 }
 
 // ── Pull 操作（应用启动时全量拉取） ───────────────
