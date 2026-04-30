@@ -3,7 +3,7 @@
  * M9: 数据导出/导入
  * NAS 数据同步配置
  */
-import { state } from '../app.js';
+import { state, APP_VERSION } from '../app.js';
 import { showCustomActOverlay } from './custom-activity.js';
 import { isConfigured, setApiBase, login, clearAuth, pushProfile } from '../sync.js';
 
@@ -155,9 +155,6 @@ export function buildSettingsHTML({ profile, settings }) {
           </div>
         </div>
         <div id="sync-status" style="font-size:13px;color:var(--text-sec);padding:8px 0;text-align:center"></div>
-        <div id="sync-version" style="font-size:12px;color:var(--text-mute);padding:8px 0;text-align:center;display:none">
-          最后同步版本：<span id="sync-version-text">--</span>
-        </div>
         <button id="sync-logout-btn" class="btn btn-ghost btn-full" style="display:none;margin-top:8px">断开连接</button>
       </div>
     </div>
@@ -187,8 +184,10 @@ export function buildSettingsHTML({ profile, settings }) {
 
     <div class="section">
       <div style="text-align:center;font-size:12px;color:var(--text-mute)">
-        起起成长设置 · 数据优先存储在本设备，配置 NAS 后自动同步<br/>
-        <span style="font-size:11px;margin-top:4px;display:block">版本号在每次数据更新后自动生成</span>
+        起起成长设置 · 数据优先存储在本设备，配置 NAS 后自动同步
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--text-mute);margin-top:8px">
+        应用版本 v${APP_VERSION}
       </div>
     </div>`;
 }

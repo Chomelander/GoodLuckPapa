@@ -18,6 +18,8 @@ import { renderReview } from './ui/review.js';
 import { showDiaryOverlay } from './ui/diary.js';
 
 // ── 全局状态 ─────────────────────────────────────────────
+export const APP_VERSION = '2.1';
+
 export const state = {
   db: null,
   profile: null,
