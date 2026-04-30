@@ -24,6 +24,7 @@ export async function renderMoments() {
       id: `diary-${d.id}`,
       type: 'diary',
       timestamp: d.createdAt,
+      date: d.date,  // 本地日期（YYYY-MM-DD），用于分组
       data: d,
     });
   });
@@ -33,6 +34,7 @@ export async function renderMoments() {
       id: `record-${r.id}`,
       type: 'record',
       timestamp: r.createdAt,
+      date: r.date,  // 本地日期（YYYY-MM-DD），用于分组
       data: r,
     });
   });
@@ -40,10 +42,10 @@ export async function renderMoments() {
   // 按时间倒序
   moments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-  // 按日期分组
+  // 按本地日期分组（避免 UTC toISOString 跨时区日期偏移）
   const groupedByDate = new Map();
   moments.forEach(m => {
-    const date = m.timestamp.split('T')[0];
+    const date = m.date || new Date(m.timestamp).toLocaleDateString('sv'); // sv locale 输出 YYYY-MM-DD
     if (!groupedByDate.has(date)) groupedByDate.set(date, []);
     groupedByDate.get(date).push(m);
   });
@@ -122,7 +124,10 @@ export async function renderMoments() {
 
 function buildDiaryCard(moment) {
   const d = moment.data;
-  const time = new Date(d.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  const dt = d.createdAt ? new Date(d.createdAt) : null;
+  const time = dt
+    ? dt.toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : (d.date ?? '');
 
   // 日记内容：changes 和 feelings 拼合显示
   const contentParts = [d.changes, d.feelings].filter(Boolean);
@@ -157,7 +162,10 @@ function buildRecordCard(moment, activities) {
   const r = moment.data;
   const activity = activities.find(a => a.id === r.actId);
   const activityName = activity?.title ?? activity?.name ?? r.actId;
-  const time = new Date(r.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  const dt = r.createdAt ? new Date(r.createdAt) : null;
+  const time = dt
+    ? dt.toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : (r.date ?? '');
   const focusMin = Math.round((r.focusSec || 0) / 60);
 
   const EMOTION_MAP = {
@@ -252,9 +260,9 @@ function showImagePreview(dataUrl) {
 // ═══════════════════════════════════════════════
 
 function formatDateLabel(dateStr) {
-  // dateStr 是 YYYY-MM-DD（已从 createdAt UTC 字符串中裁切）
-  const today    = new Date().toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  // dateStr 是 YYYY-MM-DD（本地日期）
+  const today     = new Date().toLocaleDateString('sv');  // YYYY-MM-DD 本地时区
+  const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('sv');
   if (dateStr === today)     return '今天';
   if (dateStr === yesterday) return '昨天';
   // 本地化日期格式

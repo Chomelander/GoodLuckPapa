@@ -3,7 +3,7 @@
  * 职责：DB初始化 → Onboarding检测 → Tab切换 → 页面调度 → M_ReEntry检测
  */
 import { openDB } from './db.js';
-import { calcAgeMonths, shouldShowReEntry } from './rules.js';
+import { calcAgeMonths } from './rules.js';
 import { ACTIVITIES } from './data/activities-complete.js';
 import { MILESTONES } from './data/milestones.js';
 import { renderOnboarding, bindOnboardingComplete } from './ui/onboarding.js';
@@ -12,7 +12,6 @@ import { renderActivities, showActivityDetail } from './ui/activities.js';
 import { renderGrowth } from './ui/milestones.js';
 import { renderMoments } from './ui/moments.js';
 import { renderSettings } from './ui/settings.js';
-import { showReEntry } from './ui/reentry.js';
 import { showTimer } from './ui/timer.js';
 import { showRecord } from './ui/record.js';
 import { renderReview } from './ui/review.js';
@@ -88,12 +87,6 @@ async function startApp() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
-
-  // M_ReEntry 检测
-  const records = await state.db.getRecords();
-  if (shouldShowReEntry({ records, today: state.today })) {
-    showReEntry(records.length);
-  }
 
   // 事件总线：计时器 ↔ 记录
   document.addEventListener('today:startTimer', e => {
