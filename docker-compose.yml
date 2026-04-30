@@ -16,9 +16,9 @@ services:
       - ./icon.svg:/usr/share/nginx/html/icon.svg:ro
       - ./manifest.json:/usr/share/nginx/html/manifest.json:ro
       - ./service-worker.js:/usr/share/nginx/html/service-worker.js:ro
-      # HTTPS 证书（如果使用自签名或 Let's Encrypt）
-      # - ./certs/cert.pem:/etc/nginx/certs/cert.pem:ro
-      # - ./certs/key.pem:/etc/nginx/certs/key.pem:ro
+      # HTTPS 证书（自签名）
+      - ./certs/cert.pem:/etc/nginx/certs/cert.pem:ro
+      - ./certs/key.pem:/etc/nginx/certs/key.pem:ro
     depends_on:
       - bun-api
     networks:
