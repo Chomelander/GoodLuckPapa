@@ -17,6 +17,71 @@ const MONTHLY_DIMS = [
   { id: 'nature_culture', label: '自然与文化' },
 ];
 
+// 维度 id → 里程碑 domain + 活动 domain 的映射
+// 里程碑 domain 来自 milestones.js normalizeMilestone 的结果字段
+// 活动 domain 来自 activities-complete.js DOMAIN_MAP 的结果字段
+const DIM_DATA_MAP = {
+  movement:       { mDomains: ['motor'],                        aDomains: ['movement'] },
+  sensorial:      { mDomains: ['sensory'],                      aDomains: ['sensorial'] },
+  language:       { mDomains: ['language'],                     aDomains: ['language'] },
+  math_logic:     { mDomains: ['cognitive', 'math'],            aDomains: ['math'] },
+  practical_life: { mDomains: ['self_care', 'practical'],       aDomains: ['practical_life'] },
+  social_emotion: { mDomains: ['emotional_social', 'social'],   aDomains: ['emotional_social'] },
+  concentration:  { mDomains: ['cognitive'],                    aDomains: [] },
+  independence:   { mDomains: ['self_care'],                    aDomains: ['practical_life'] },
+  creativity:     { mDomains: [],                               aDomains: [] },
+  nature_culture: { mDomains: [],                               aDomains: ['culture'] },
+};
+
+/**
+ * 计算各维度客观指标（纯函数，可单元测试）
+ * @param {Object} p
+ * @param {Array}  p.milestones      - 里程碑定义列表（来自 MILESTONES）
+ * @param {Array}  p.activities      - 活动定义列表（来自 state.activities）
+ * @param {number} p.ageMonths       - 孩子当前月龄
+ * @param {string} p.month           - 统计月份 'YYYY-MM'
+ * @param {Object} p.milestoneStates - { [milestoneId]: { status, ... } }
+ * @param {Array}  p.records         - 所有观察记录
+ * @returns {Array} stats per dim: { id, label, milestoneRate, milestoneAchieved, milestoneApplicable, frequency }
+ */
+export function computeDimensionStats({ milestones, activities, ageMonths, month, milestoneStates, records }) {
+  const actDomain = {};
+  for (const a of activities) actDomain[a.id] = a.domain;
+
+  const monthRecords = records.filter(r => r.date?.startsWith(month));
+
+  return MONTHLY_DIMS.map(dim => {
+    const mapping = DIM_DATA_MAP[dim.id];
+
+    // 里程碑完成率：只统计当前月龄应已达到的里程碑（windowEnd <= ageMonths + 1）
+    const applicable = milestones.filter(m =>
+      mapping.mDomains.includes(m.domain) &&
+      m.windowEnd != null &&
+      m.windowEnd <= ageMonths + 1
+    );
+    const achieved = applicable.filter(m =>
+      (milestoneStates[m.id]?.status ?? 'pending') === 'achieved'
+    );
+    const milestoneRate = applicable.length > 0
+      ? achieved.length / applicable.length
+      : null; // null = 当前月龄暂无适用里程碑
+
+    // 观察频次：本月内该维度的活动记录数
+    const frequency = monthRecords.filter(r =>
+      mapping.aDomains.includes(actDomain[r.actId])
+    ).length;
+
+    return {
+      id: dim.id,
+      label: dim.label,
+      milestoneRate,
+      milestoneAchieved: achieved.length,
+      milestoneApplicable: applicable.length,
+      frequency,
+    };
+  });
+}
+
 // 周复盘5问
 const WEEKLY_QUESTIONS = [
   '本周孩子在哪个活动中表现出最强的专注？',
@@ -163,80 +228,54 @@ export function buildWeeklyHTML({ records, today, ageMonths }) {
     </div>`;
 }
 
-// ── buildMonthlyFormHTML ───────────────────────────────────
+// ── buildMonthlyStatsHTML ──────────────────────────────────
 
-export function buildMonthlyFormHTML({ ageMonths }) {
-  const dimsHTML = MONTHLY_DIMS.map(dim => `
-    <div class="dim-item" style="margin-bottom:16px">
-      <div style="font-size:14px;font-weight:500;margin-bottom:8px">${dim.label}</div>
-      <div style="display:flex;gap:8px">
-        ${[1, 2, 3, 4, 5].map(v => `
-          <label style="flex:1;text-align:center;cursor:pointer">
-            <input type="radio" name="dim-${dim.id}" value="${v}" style="display:none">
-            <div class="dim-radio" data-dimid="${dim.id}" data-value="${v}"
-              style="padding:8px 0;border-radius:var(--r-sm);border:1px solid var(--border);font-size:13px;color:var(--text-sec)">
-              ${v}
-            </div>
-          </label>`).join('')}
-      </div>
-    </div>`).join('');
+export function buildMonthlyStatsHTML({ stats, note, ageMonths }) {
+  const dimCardsHTML = stats.map(dim => {
+    const pct = dim.milestoneRate !== null ? Math.round(dim.milestoneRate * 100) : null;
+    const barColor = pct === null ? 'var(--border)'
+      : pct >= 70 ? '#4caf50'
+      : pct >= 40 ? '#ff9800'
+      : '#f44336';
 
-  return `
-    <div class="section">
-      <form id="monthly-form">
-        <div class="card" style="margin-bottom:12px">
-          <div style="font-size:13px;color:var(--text-sec);margin-bottom:16px;line-height:1.6">
-            为孩子本月（${ageMonths}个月）在各维度的表现评分，1分=几乎没有观察，5分=非常突出。
-          </div>
-          ${dimsHTML}
-        </div>
-        <div class="card" style="margin-bottom:12px">
-          <div class="form-label" style="font-size:13px;font-weight:500;margin-bottom:8px">本月最大发现（选填）</div>
-          <textarea class="form-input form-textarea" id="monthly-note"
-            placeholder="这个月你最惊喜的观察是…" style="margin-bottom:0"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary btn-full">保存复盘</button>
-      </form>
-    </div>`;
-}
+    const milestoneSection = pct !== null
+      ? `<div style="display:flex;align-items:center;gap:8px">
+           <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+             <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px"></div>
+           </div>
+           <span style="font-size:11px;color:${barColor};font-weight:500;white-space:nowrap">
+             ${pct}% (${dim.milestoneAchieved}/${dim.milestoneApplicable})
+           </span>
+         </div>`
+      : `<div style="font-size:11px;color:var(--text-mute)">暂无适用里程碑</div>`;
 
-// ── buildMonthlySavedHTML ──────────────────────────────────
-
-function buildMonthlySavedHTML({ saved }) {
-  const dotsHTML = (score) => [1, 2, 3, 4, 5].map(v =>
-    `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:4px;
-      background:${v <= score ? 'var(--primary)' : 'var(--border)'}"></span>`
-  ).join('');
-
-  const scoresHTML = MONTHLY_DIMS.map(dim => {
-    const score = saved.scores?.[dim.id] ?? 0;
     return `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;
-        border-bottom:1px solid var(--border)">
-        <div style="font-size:14px;color:var(--text)">${dim.label}</div>
-        <div style="display:flex;align-items:center">
-          ${score > 0 ? dotsHTML(score) : `<span style="font-size:12px;color:var(--text-mute)">未评</span>`}
+      <div class="dim-stat-item" style="padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:14px;font-weight:500;color:var(--text)">${dim.label}</span>
+          <span style="font-size:12px;color:var(--text-sec)">📝 × ${dim.frequency}</span>
         </div>
+        ${milestoneSection}
       </div>`;
   }).join('');
 
-  const noteHTML = saved.note
-    ? `<div class="card" style="margin-bottom:0">
-        <div style="font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:8px">本月最大发现</div>
-        <div style="font-size:14px;line-height:1.7;color:var(--text)">${saved.note}</div>
-       </div>`
-    : '';
+  const noteSection = note
+    ? `<div style="font-size:13px;font-weight:500;color:var(--text-sec);margin-bottom:8px">本月最大发现</div>
+       <div style="font-size:14px;line-height:1.7;color:var(--text)">${note}</div>`
+    : `<div class="form-label" style="font-size:13px;font-weight:500;margin-bottom:8px">本月最大发现（选填）</div>
+       <textarea class="form-input form-textarea" id="monthly-note"
+         placeholder="这个月你最惊喜的观察是…" style="margin-bottom:8px"></textarea>
+       <button id="save-monthly-note" class="btn btn-primary btn-full">保存备注</button>`;
 
   return `
     <div class="section">
       <div class="card" style="margin-bottom:12px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="font-size:14px;font-weight:600;color:var(--text)">各维度评分</div>
-          <div style="font-size:12px;color:var(--primary);font-weight:500">已完成</div>
+        <div style="font-size:13px;color:var(--text-sec);margin-bottom:12px;line-height:1.6">
+          ${ageMonths} 个月 · 本月各维度客观数据
         </div>
-        ${scoresHTML}
+        ${dimCardsHTML}
       </div>
-      ${noteHTML}
+      <div class="card">${noteSection}</div>
     </div>`;
 }
 
@@ -274,29 +313,48 @@ export async function renderReview() {
 
   if (monthlyEl) {
     const month = state.today.slice(0, 7);
-    const saved = await state.db.getMonthlyReview(month);
-    monthlyEl.innerHTML = saved
-      ? buildMonthlySavedHTML({ saved })
-      : buildMonthlyFormHTML({ ageMonths: state.ageMonths });
 
-    if (!saved) _bindMonthlySubmit(month);
+    // 加载里程碑状态
+    const milestoneStates = {};
+    for (const m of state.milestones) {
+      const saved = await state.db.getMilestoneState(m.id);
+      if (saved) milestoneStates[m.id] = saved;
+    }
+
+    const stats = computeDimensionStats({
+      milestones: state.milestones,
+      activities: state.activities,
+      ageMonths: state.ageMonths,
+      month,
+      milestoneStates,
+      records,
+    });
+
+    const saved = await state.db.getMonthlyReview(month);
+    monthlyEl.innerHTML = buildMonthlyStatsHTML({
+      stats,
+      note: saved?.note ?? null,
+      ageMonths: state.ageMonths,
+    });
+
+    if (!saved?.note) _bindNoteSubmit(month);
   }
 }
 
-function _bindMonthlySubmit(month) {
+function _bindNoteSubmit(month) {
   if (typeof document === 'undefined') return;
-  document.addEventListener('submit', async e => {
-    if (e.target.id !== 'monthly-form') return;
-    e.preventDefault();
-
-    const scores = {};
-    MONTHLY_DIMS.forEach(dim => {
-      const checked = document.querySelector(`input[name="dim-${dim.id}"]:checked`);
-      scores[dim.id] = checked ? parseInt(checked.value, 10) : 0;
-    });
-
+  const btn = document.getElementById('save-monthly-note');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
     const note = document.getElementById('monthly-note')?.value.trim() ?? '';
-    await state.db.saveMonthlyReview({ month, scores, note, ageMonths: state.ageMonths });
+    if (!note) return;
+    const existing = await state.db.getMonthlyReview(month);
+    await state.db.saveMonthlyReview({
+      ...(existing ?? {}),
+      month,
+      note,
+      ageMonths: state.ageMonths,
+    });
     renderReview();
-  }, { once: true });
+  });
 }
