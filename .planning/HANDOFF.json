@@ -1,36 +1,73 @@
 {
   "version": "1.0",
-  "timestamp": "2026-04-23T07:04:46Z",
-  "phase": "01",
-  "phase_name": "cf-workers-skeleton",
-  "phase_dir": ".planning/phases/01-cf-workers-skeleton",
-  "plan": 1,
-  "task": 0,
-  "total_tasks": 6,
+  "timestamp": "2026-04-30T20:35:00Z",
+  "context": "brownfield_stage_completion",
+  "phase": "Stage 0 & 4 Complete",
+  "task": null,
+  "total_tasks": null,
   "status": "paused",
-  "completed_tasks": [],
-  "remaining_tasks": [
-    {"id": 1, "name": "Worker 项目骨架 + 路由挂载 + 健康检查", "status": "not_started"},
-    {"id": 2, "name": "D1 数据库 migration 建表", "status": "not_started"},
-    {"id": 3, "name": "Vitest 测试基础设施 + 认证中间件测试", "status": "not_started"},
-    {"id": 4, "name": "微信登录 /api/auth/login 路由", "status": "not_started"},
-    {"id": 5, "name": "profile + activities + milestones 路由", "status": "not_started"},
-    {"id": 6, "name": "records + diary + review 路由", "status": "not_started"}
-  ],
-  "blockers": [],
-  "human_actions_pending": [
+  "completed_work": [
     {
-      "action": "执行 /gsd-execute-phase 开始 Phase 01 执行",
-      "context": "6 个 Plan 已就绪，worker/ 目录尚不存在，等待首次执行",
-      "blocking": false
+      "stage": 0,
+      "name": "存量项目接入",
+      "completed": "自动扫描 → 推断 docs/01-03 → 用户确认 → 锁定",
+      "output_files": [
+        "docs/01-产品核心定位.md",
+        "docs/02-MVP功能清单.md",
+        "docs/03-功能验收标准.md"
+      ],
+      "commit": "pending"
+    },
+    {
+      "stage": 4,
+      "name": "核心信息锁定",
+      "completed": "从 docs/01 提取信息 → 更新 CLAUDE.md 产品核心信息",
+      "output_files": ["CLAUDE.md (产品核心信息段)"],
+      "commit": "pending"
     }
   ],
-  "decisions": [
-    {"decision": "用 Hono + CF Workers + D1 作为后端技术栈", "rationale": "轻量、边缘部署、免费额度充足，匹配 P1 个人版规模", "phase": "01"},
-    {"decision": "JWT 签名显式指定 alg: HS256", "rationale": "防止 CVE-2026-22817（algorithm confusion attack）", "phase": "01"},
-    {"decision": "secrets 不入 wrangler.toml，走 .dev.vars / CF Secrets", "rationale": "安全边界清晰，防止密钥泄漏到 git", "phase": "01"}
+  "remaining_work": [
+    {
+      "stage": 6,
+      "name": "开发规划",
+      "trigger": ".planning/ 存在但无 PLAN.md",
+      "action": "调用 /gsd-plan-phase"
+    },
+    {
+      "stage": 7,
+      "name": "UI/UX 设计",
+      "note": "仅当 PLAN.md 包含 UI/前端关键词时触发"
+    },
+    {
+      "stage": 8,
+      "name": "迭代开发",
+      "note": "PLAN.md 有未完成任务时触发"
+    }
   ],
-  "uncommitted_files": ["js/data/milestones.js.bak"],
-  "next_action": "执行 /gsd-execute-phase 从 Plan 01-01 开始创建 worker/ 项目骨架",
-  "context_notes": "Phase 01 规划阶段（research + context + patterns + 6 plans）已全部完成并 committed。执行阶段尚未开始，worker/ 目录不存在。6 个 Plan 按 wave 顺序：wave1(01-01, 01-02), wave2(01-03), wave3(01-04, 01-05, 01-06)。"
+  "blockers": [],
+  "human_actions_pending": [],
+  "decisions": [
+    {
+      "decision": "从代码自动推断 docs/01-03",
+      "rationale": "存量项目已有完整实装，无需从零 brainstorming",
+      "approach": "按 rules/08 执行指南扫描（代码、测试、文档）"
+    },
+    {
+      "decision": "docs/03 验收标准从 244 通过的测试推断",
+      "rationale": "所有 MVP 功能已实装且测试通过，直接从测试反推验收标准",
+      "reference": "244/244 tests passing"
+    }
+  ],
+  "uncommitted_files": [
+    "CLAUDE.md (modified)",
+    "docs/01-产品核心定位.md (new)",
+    "docs/02-MVP功能清单.md (new)",
+    "docs/03-功能验收标准.md (new)",
+    "docs/04-变更日志.md (new)",
+    "docs/05-项目进展.md (new)",
+    "docs/06-后续计划.md (new)",
+    "docs/07-UI设计交付.md (new)"
+  ],
+  "next_action": "Stage 6：调用 /gsd-plan-phase 制定开发计划",
+  "context_notes": "Stage 0 自动扫描验证成功。现在需要进入开发规划阶段，为 5 个 Must-Have 功能制定具体开发计划。".planning/HANDOFF.json"
 }
