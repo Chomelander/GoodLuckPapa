@@ -17,20 +17,23 @@ const TOKEN_KEY    = 'qiqi_jwt';
 
 // ── 基础工具 ──────────────────────────────────────
 
+// 兼容 Node.js 测试环境（无 localStorage）
+const _ls = typeof localStorage !== 'undefined' ? localStorage : null;
+
 function _getBase() {
-  return (localStorage.getItem(API_BASE_KEY) || '').replace(/\/$/, '');
+  return (_ls?.getItem(API_BASE_KEY) ?? '').replace(/\/$/, '');
 }
 
 function _getToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  return _ls?.getItem(TOKEN_KEY) ?? null;
 }
 
 export function setToken(token) {
-  localStorage.setItem(TOKEN_KEY, token);
+  _ls?.setItem(TOKEN_KEY, token);
 }
 
 export function setApiBase(base) {
-  localStorage.setItem(API_BASE_KEY, base.replace(/\/$/, ''));
+  _ls?.setItem(API_BASE_KEY, base.replace(/\/$/, ''));
 }
 
 /** 是否已配置 API 地址 */
@@ -125,6 +128,7 @@ export function pushRecord(record) {
  */
 export function deleteRecord(id) {
   _apiFetch(`/api/records/${id}`, { method: 'DELETE' });
+  _updateSyncVersion();
 }
 
 /**
@@ -162,6 +166,7 @@ export function pushDiary(entry) {
  */
 export function deleteDiary(id) {
   _apiFetch(`/api/diary/${id}`, { method: 'DELETE' });
+  _updateSyncVersion();
 }
 
 /**

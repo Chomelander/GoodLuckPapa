@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   buildWeeklyHTML,
   calcWeeklyStats,
-  buildMonthlyFormHTML,
+  buildMonthlyStatsHTML,
+  computeDimensionStats,
   buildWeekRecordsHTML,
 } from '../js/ui/review.js';
 
@@ -135,29 +136,128 @@ describe('buildWeekRecordsHTML', () => {
   });
 });
 
-describe('buildMonthlyFormHTML', () => {
-  it('renders 10 dimension items', () => {
-    const html = buildMonthlyFormHTML({ ageMonths: 4 });
-    const matches = html.match(/class="dim-item"/g) || [];
+// ── computeDimensionStats ──────────────────────────────────
+
+const milestones = [
+  { id: 'm1', domain: 'motor',    windowStart: 0, windowEnd: 3 },
+  { id: 'm2', domain: 'motor',    windowStart: 0, windowEnd: 6 },
+  { id: 'm3', domain: 'language', windowStart: 0, windowEnd: 6 },
+  { id: 'm4', domain: 'sensory',  windowStart: 3, windowEnd: 9 },
+];
+
+const activities = [
+  { id: 'M-0-01', domain: 'movement' },
+  { id: 'L-0-01', domain: 'language' },
+  { id: 'S-0-01', domain: 'sensorial' },
+];
+
+const statRecords = [
+  { actId: 'M-0-01', date: '2026-04-01' },
+  { actId: 'M-0-01', date: '2026-04-15' },
+  { actId: 'L-0-01', date: '2026-04-10' },
+  { actId: 'S-0-01', date: '2026-03-20' }, // different month — excluded
+];
+
+describe('computeDimensionStats', () => {
+  it('returns 10 dimension stats', () => {
+    const stats = computeDimensionStats({
+      milestones, activities, ageMonths: 6, month: '2026-04',
+      milestoneStates: {}, records: statRecords,
+    });
+    expect(stats).toHaveLength(10);
+  });
+
+  it('counts observation frequency for this month only', () => {
+    const stats = computeDimensionStats({
+      milestones, activities, ageMonths: 6, month: '2026-04',
+      milestoneStates: {}, records: statRecords,
+    });
+    const movement = stats.find(d => d.id === 'movement');
+    expect(movement.frequency).toBe(2);
+    const sensorial = stats.find(d => d.id === 'sensorial');
+    expect(sensorial.frequency).toBe(0); // S-0-01 record is in March
+  });
+
+  it('returns milestoneRate null when no applicable milestones for age', () => {
+    const stats = computeDimensionStats({
+      milestones, activities, ageMonths: 2, month: '2026-04',
+      milestoneStates: {}, records: [],
+    });
+    // sensory milestone windowEnd=9, so at ageMonths=2: windowEnd(9) <= 2+1=3 → false → no applicable
+    const sensorial = stats.find(d => d.id === 'sensorial');
+    expect(sensorial.milestoneRate).toBeNull();
+  });
+
+  it('calculates milestone completion rate correctly', () => {
+    // ageMonths=6: m1(windowEnd=3 ≤ 7 ✓), m2(windowEnd=6 ≤ 7 ✓) applicable for movement
+    // m2 is achieved
+    const stats = computeDimensionStats({
+      milestones, activities, ageMonths: 6, month: '2026-04',
+      milestoneStates: { m2: { status: 'achieved' } }, records: [],
+    });
+    const movement = stats.find(d => d.id === 'movement');
+    expect(movement.milestoneApplicable).toBe(2);
+    expect(movement.milestoneAchieved).toBe(1);
+    expect(movement.milestoneRate).toBeCloseTo(0.5);
+  });
+
+  it('returns milestoneRate 0 when no milestones achieved', () => {
+    const stats = computeDimensionStats({
+      milestones, activities, ageMonths: 6, month: '2026-04',
+      milestoneStates: {}, records: [],
+    });
+    const movement = stats.find(d => d.id === 'movement');
+    expect(movement.milestoneRate).toBe(0);
+  });
+});
+
+// ── buildMonthlyStatsHTML ──────────────────────────────────
+
+const sampleStats = [
+  { id: 'movement', label: '动作发展', milestoneRate: 0.5, milestoneAchieved: 1, milestoneApplicable: 2, frequency: 3 },
+  { id: 'sensorial', label: '感官探索', milestoneRate: null, milestoneAchieved: 0, milestoneApplicable: 0, frequency: 0 },
+  ...['language','math_logic','practical_life','social_emotion','concentration','independence','creativity','nature_culture'].map(id => (
+    { id, label: id, milestoneRate: 0, milestoneAchieved: 0, milestoneApplicable: 1, frequency: 0 }
+  )),
+];
+
+describe('buildMonthlyStatsHTML', () => {
+  it('renders 10 dimension stat items', () => {
+    const html = buildMonthlyStatsHTML({ stats: sampleStats, note: null, ageMonths: 6 });
+    const matches = html.match(/class="dim-stat-item"/g) || [];
     expect(matches.length).toBe(10);
   });
 
-  it('renders rating inputs for each dimension', () => {
-    const html = buildMonthlyFormHTML({ ageMonths: 4 });
-    // each dimension has 5 radio options
-    const radios = html.match(/type="radio"/g) || [];
-    expect(radios.length).toBe(50); // 10 × 5
-  });
-
-  it('renders submit button', () => {
-    const html = buildMonthlyFormHTML({ ageMonths: 4 });
-    expect(html).toContain('保存复盘');
-  });
-
   it('renders dimension labels', () => {
-    const html = buildMonthlyFormHTML({ ageMonths: 4 });
+    const html = buildMonthlyStatsHTML({ stats: sampleStats, note: null, ageMonths: 6 });
     expect(html).toContain('动作发展');
     expect(html).toContain('感官探索');
-    expect(html).toContain('语言发展');
+  });
+
+  it('renders progress bar for dimensions with applicable milestones', () => {
+    const html = buildMonthlyStatsHTML({ stats: sampleStats, note: null, ageMonths: 6 });
+    expect(html).toContain('width:50%');
+  });
+
+  it('renders null milestone indicator for age-inapplicable dimensions', () => {
+    const html = buildMonthlyStatsHTML({ stats: sampleStats, note: null, ageMonths: 6 });
+    expect(html).toContain('暂无适用里程碑');
+  });
+
+  it('shows note when provided', () => {
+    const html = buildMonthlyStatsHTML({ stats: sampleStats, note: '宝宝开始爬了', ageMonths: 6 });
+    expect(html).toContain('宝宝开始爬了');
+    expect(html).not.toContain('save-monthly-note');
+  });
+
+  it('shows note input when note is null', () => {
+    const html = buildMonthlyStatsHTML({ stats: sampleStats, note: null, ageMonths: 6 });
+    expect(html).toContain('save-monthly-note');
+    expect(html).toContain('monthly-note');
+  });
+
+  it('renders observation frequency count', () => {
+    const html = buildMonthlyStatsHTML({ stats: sampleStats, note: null, ageMonths: 6 });
+    expect(html).toContain('📝 × 3');
   });
 });

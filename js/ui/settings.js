@@ -3,7 +3,7 @@
  * M9: 数据导出/导入
  * NAS 数据同步配置
  */
-import { state } from '../app.js';
+import { state, APP_VERSION } from '../app.js';
 import { showCustomActOverlay } from './custom-activity.js';
 import { isConfigured, setApiBase, login, clearAuth, pushProfile } from '../sync.js';
 
@@ -185,6 +185,9 @@ export function buildSettingsHTML({ profile, settings }) {
     <div class="section">
       <div style="text-align:center;font-size:12px;color:var(--text-mute)">
         起起成长设置 · 数据优先存储在本设备，配置 NAS 后自动同步
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--text-mute);margin-top:8px">
+        应用版本 v${APP_VERSION}
       </div>
     </div>`;
 }
@@ -431,7 +434,7 @@ export async function renderSettings() {
     } else if (action === 'ca-confirm') {
       await state.db.deleteCustomActivity(id);
       // 同步 state.activities
-      const { ACTIVITIES } = await import('../data/activities.js');
+      const { ACTIVITIES } = await import('../data/activities-complete.js');
       const remaining = await state.db.getCustomActivities();
       state.activities = [...ACTIVITIES, ...remaining];
       document.getElementById(`ca-card-${id}`)?.remove();
